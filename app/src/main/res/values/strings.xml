@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Eenth</string>
+    <string name="accessibility_service_description">Eenth uses this service to detect and block distracting apps.</string>
 </resources>
