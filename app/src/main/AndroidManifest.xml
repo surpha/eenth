@@ -40,7 +40,13 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/service_config" />
         </service>
-
+    
+        <activity
+            android:name=".NfcUnlockActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop" />
+        
     </application>
 
 </manifest>

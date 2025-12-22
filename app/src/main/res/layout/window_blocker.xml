@@ -16,11 +16,19 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/btnUnlock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
-        android:layout_marginBottom="50dp"
-        android:text="Tap NFC to Unlock"
+        android:layout_marginBottom="80dp"
+        android:text="Tap Here to Scan NFC"
         android:textColor="#FFFFFF"
-        android:textSize="18sp" />
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:padding="20dp"
+        android:background="#B71C1C"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="4dp" />
+
 </FrameLayout>
