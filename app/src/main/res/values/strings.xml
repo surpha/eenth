@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Eenth</string>
-    <string name="accessibility_service_description">Eenth uses this service to detect and block distracting apps.</string>
+    <string name="accessibility_service_description">Eenth uses this service to detect and block distracting apps when your phone is in Bricked mode.</string>
 </resources>

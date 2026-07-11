@@ -1,136 +1,84 @@
 package com.eenth.blocker
 
 import android.accessibilityservice.AccessibilityService
-import android.graphics.PixelFormat
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowManager
-import android.view.accessibility.AccessibilityEvent
-import android.util.Log
-import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Build
+import android.util.Log
+import android.view.accessibility.AccessibilityEvent
 
 class EenthService : AccessibilityService() {
 
-    private var windowManager: WindowManager? = null
-    private var blockerView: View? = null
-    private var isBlocking = false
-    private var isUnlocked = false
+    companion object {
+        const val ACTION_STATE_CHANGED = "com.eenth.blocker.ACTION_STATE_CHANGED"
+    }
 
-    private val unlockReceiver = object : BroadcastReceiver() {
+    private lateinit var prefs: SharedPreferences
+
+    private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "com.eenth.blocker.ACTION_UNLOCK") {
-                Log.d("EenthSensor", "Unlock Command Received! Unlocking session.")
-                
-                isUnlocked = true // <--- Permanent unlock
-                removeBlocker()
+            if (intent?.action == ACTION_STATE_CHANGED) {
+                val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
+                Log.d("EenthService", "State changed. Bricked: $isBricked")
+                if (!isBricked) {
+                    // Send user home and dismiss the blocker activity
+                    val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)
+                    sendBroadcast(closeIntent)
+                }
             }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        // Turn on the "Ear" when service starts
-        val filter = IntentFilter("com.eenth.blocker.ACTION_UNLOCK")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(unlockReceiver, filter, RECEIVER_EXPORTED)
+        prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
+        val filter = IntentFilter(ACTION_STATE_CHANGED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(stateReceiver, filter, RECEIVER_EXPORTED)
         } else {
-            registerReceiver(unlockReceiver, filter)
+            registerReceiver(stateReceiver, filter)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Turn off the "Ear" when service dies
-        unregisterReceiver(unlockReceiver)
+        unregisterReceiver(stateReceiver)
     }
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
-        // Initialize the Window Manager (The system service that handles screens)
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-    }
+    // System UI packages to ignore
+    private val systemUiPackages = setOf(
+        "com.android.systemui",
+        "com.samsung.android.app.cocktailbarservice",
+        "com.samsung.android.edge",
+        "com.android.launcher",
+        "com.google.android.apps.nexuslauncher",
+        "com.sec.android.app.launcher"
+    )
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            if (packageName == this.packageName) return 
+            // Ignore our own app and system UI
+            if (packageName == this.packageName) return
+            if (packageName == "com.eenth.blocker") return
+            if (systemUiPackages.contains(packageName)) return
 
-            // --- NEW LOGIC ---
-            // If the user unlocked the app, we simply stop checking.
-            if (isUnlocked) {
-                Log.d("EenthSensor", "Allowed: $packageName (Session Unlocked)")
-                return
+            val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
+            if (!isBricked) return
+
+            val blockedApps = prefs.getStringSet(MainActivity.KEY_BLOCKED_APPS, emptySet()) ?: emptySet()
+
+            if (blockedApps.contains(packageName)) {
+                Log.d("EenthService", "BLOCKING: $packageName")
+                // Launch the blocker as a full-screen Activity
+                val intent = Intent(this, BlockerActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
             }
-
-            Log.d("EenthSensor", "DETECTED APP: $packageName")
-
-            if (packageName == "com.android.chrome" || packageName == "com.google.android.youtube") {
-                showBlocker()
-            } else {
-                removeBlocker()
-            }
-        }
-    }
-
-    private fun showBlocker() {
-       if (isBlocking) return
-
-        try {
-            // 1. Inflate the view if it doesn't exist
-            if (blockerView == null) {
-                val inflater = LayoutInflater.from(this)
-                blockerView = inflater.inflate(R.layout.window_blocker, null)
-            }
-
-            // 2. ALWAYS attach the listener (Fixes the stale button bug)
-            val btnUnlock = blockerView?.findViewById<View>(R.id.btnUnlock)
-            btnUnlock?.setOnClickListener {
-                Log.d("EenthSensor", "Unlock Button Clicked!") // Check logs for this!
-                
-                try {
-                    val intent = Intent(this, NfcUnlockActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    Log.e("EenthSensor", "Failed to launch activity: ${e.message}")
-                }
-            }
-
-            // 3. Configure window
-            val params = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                // FLAG_NOT_TOUCH_MODAL allows touches to pass to the window
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                PixelFormat.TRANSLUCENT
-            )
-            params.gravity = Gravity.CENTER
-
-            windowManager?.addView(blockerView, params)
-            isBlocking = true
-            Log.d("EenthSensor", "BLOCKER SHOWN!")
-
-        } catch (e: Exception) {
-            Log.e("EenthSensor", "Error showing blocker: ${e.message}")
-        }
-    }
-
-    private fun removeBlocker() {
-        if (!isBlocking || blockerView == null) return
-
-        try {
-            windowManager?.removeView(blockerView)
-            isBlocking = false
-            Log.d("EenthSensor", "BLOCKER REMOVED!")
-        } catch (e: Exception) {
-            Log.e("EenthSensor", "Error removing blocker: ${e.message}")
         }
     }
 
