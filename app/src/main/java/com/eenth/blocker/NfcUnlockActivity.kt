@@ -25,13 +25,14 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
             return
         }
 
-        // Handle if launched via system NFC dispatch (TAG_DISCOVERED / TECH_DISCOVERED)
+        // Handle if launched via system NFC dispatch
         if (intent != null && (
             NfcAdapter.ACTION_TAG_DISCOVERED == intent.action ||
             NfcAdapter.ACTION_TECH_DISCOVERED == intent.action ||
             NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action
         )) {
-            handleToggle()
+            val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+            handleTag(tag)
         }
     }
 
@@ -43,7 +44,8 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
             NfcAdapter.ACTION_TECH_DISCOVERED == intent.action ||
             NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action
         )) {
-            handleToggle()
+            val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+            handleTag(tag)
         }
     }
 
@@ -63,10 +65,33 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
 
     override fun onTagDiscovered(tag: Tag?) {
         Log.d("EenthNfc", "NFC TAG DETECTED via reader mode!")
-        runOnUiThread { handleToggle() }
+        runOnUiThread { handleTag(tag) }
     }
 
-    private fun handleToggle() {
+    private fun handleTag(tag: Tag?) {
+        if (tag == null) {
+            finish()
+            return
+        }
+
+        val tagId = tag.id.toHexString()
+        val pairedId = prefs.getString(MainActivity.KEY_PAIRED_TAG_ID, null)
+
+        // If no tag is paired yet, reject — must pair from MainActivity first
+        if (pairedId == null) {
+            Toast.makeText(this, "No tag paired yet. Open Eenth to pair.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        // Verify it's the correct tag
+        if (tagId != pairedId) {
+            Toast.makeText(this, "Unrecognized tag.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        // Correct tag — toggle
         val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
         val newState = !isBricked
         prefs.edit().putBoolean(MainActivity.KEY_IS_BRICKED, newState).apply()
@@ -74,7 +99,7 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
         val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
-        // Notify service and MainActivity of the state change
+        // Notify service and MainActivity
         val stateIntent = Intent(EenthService.ACTION_STATE_CHANGED)
         sendBroadcast(stateIntent)
 
@@ -92,4 +117,6 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
         Log.d("EenthNfc", "Toggled to: bricked=$newState")
         finish()
     }
+
+    private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
 }

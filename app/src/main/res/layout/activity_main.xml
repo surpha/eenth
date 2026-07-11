@@ -44,6 +44,28 @@
             android:textSize="13sp"
             android:layout_marginTop="8dp" />
 
+        <TextView
+            android:id="@+id/tvTagStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No tag paired"
+            android:textColor="#444444"
+            android:textSize="11sp"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/btnRepair"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Re-pair Tag"
+            android:textColor="#999999"
+            android:textSize="12sp"
+            android:padding="8dp"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true" />
+
     </LinearLayout>
 
     <!-- Section Header -->

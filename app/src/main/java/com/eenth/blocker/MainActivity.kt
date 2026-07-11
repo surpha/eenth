@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         const val PREFS_NAME = "eenth_prefs"
         const val KEY_BLOCKED_APPS = "blocked_apps"
         const val KEY_IS_BRICKED = "is_bricked"
+        const val KEY_PAIRED_TAG_ID = "paired_tag_id"
         const val ACTION_STATE_CHANGED = "com.eenth.blocker.ACTION_STATE_CHANGED"
     }
 
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private lateinit var tvStatus: TextView
     private lateinit var tvStatusHint: TextView
     private lateinit var tvAppCount: TextView
+    private lateinit var tvTagStatus: TextView
+    private lateinit var btnRepair: TextView
     private var nfcAdapter: NfcAdapter? = null
 
     private val stateReceiver = object : BroadcastReceiver() {
@@ -51,9 +54,18 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         tvStatus = findViewById(R.id.tvStatus)
         tvStatusHint = findViewById(R.id.tvStatusHint)
         tvAppCount = findViewById(R.id.tvAppCount)
+        tvTagStatus = findViewById(R.id.tvTagStatus)
+        btnRepair = findViewById(R.id.btnRepair)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
 
+        btnRepair.setOnClickListener {
+            prefs.edit().remove(KEY_PAIRED_TAG_ID).apply()
+            Toast.makeText(this, "Tag unpaired. Tap a new tag to pair.", Toast.LENGTH_SHORT).show()
+            updateTagStatus()
+        }
+
         updateStatusBanner()
+        updateTagStatus()
         setupAppList()
     }
 
@@ -82,25 +94,47 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
     override fun onTagDiscovered(tag: Tag?) {
         Log.d("EenthNfc", "NFC tag detected in MainActivity!")
+        if (tag == null) return
 
-        // Toggle bricked state
+        val tagId = tag.id.toHexString()
+        val pairedId = prefs.getString(KEY_PAIRED_TAG_ID, null)
+
+        if (pairedId == null) {
+            // First tap — pair this tag
+            prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
+            eraseTagData(tag)
+            runOnUiThread {
+                Toast.makeText(this, "Tag paired! This is now your Eenth key.", Toast.LENGTH_LONG).show()
+                updateTagStatus()
+                updateStatusBanner()
+            }
+            return
+        }
+
+        if (tagId != pairedId) {
+            // Wrong tag
+            runOnUiThread {
+                Toast.makeText(this, "Unrecognized tag. Only your paired tag works.", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        // Correct tag — toggle bricked state
         val isBricked = prefs.getBoolean(KEY_IS_BRICKED, false)
         val newState = !isBricked
         prefs.edit().putBoolean(KEY_IS_BRICKED, newState).apply()
-
-        // Erase any existing NDEF URL data from the tag (one-time cleanup)
-        eraseTagData(tag)
 
         runOnUiThread {
             val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             updateStatusBanner()
 
-            // Notify the service
             val stateIntent = Intent(ACTION_STATE_CHANGED)
             sendBroadcast(stateIntent)
         }
     }
+
+    private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
 
     private fun eraseTagData(tag: Tag?) {
         if (tag == null) return
@@ -109,7 +143,6 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
             if (ndef != null) {
                 ndef.connect()
                 if (ndef.isWritable) {
-                    // Write an empty NDEF message to clear the Brick URL
                     val emptyRecord = NdefRecord(NdefRecord.TNF_EMPTY, null, null, null)
                     val emptyMessage = NdefMessage(arrayOf(emptyRecord))
                     ndef.writeNdefMessage(emptyMessage)
@@ -132,6 +165,19 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
             tvStatus.text = "UNBRICKED"
             tvStatus.setTextColor(0xFF4CAF50.toInt())
             tvStatusHint.text = "Tap your NFC tag to activate"
+        }
+    }
+
+    private fun updateTagStatus() {
+        val pairedId = prefs.getString(KEY_PAIRED_TAG_ID, null)
+        if (pairedId != null) {
+            tvTagStatus.text = "Tag paired: $pairedId"
+            tvTagStatus.setTextColor(0xFF4CAF50.toInt())
+            btnRepair.visibility = android.view.View.VISIBLE
+        } else {
+            tvTagStatus.text = "No tag paired — tap any NFC tag to pair"
+            tvTagStatus.setTextColor(0xFF999999.toInt())
+            btnRepair.visibility = android.view.View.GONE
         }
     }
 
