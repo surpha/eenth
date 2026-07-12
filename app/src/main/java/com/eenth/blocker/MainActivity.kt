@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         const val PREFS_NAME = "eenth_prefs"
         const val KEY_BLOCKED_APPS = "blocked_apps"
         const val KEY_IS_BRICKED = "is_bricked"
+        const val KEY_BRICK_EVERYTHING = "brick_everything"
         const val KEY_PAIRED_TAG_ID = "paired_tag_id"
         const val KEY_TAG_NAME = "tag_name"
         const val ACTION_STATE_CHANGED = "com.eenth.blocker.ACTION_STATE_CHANGED"
@@ -46,6 +48,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private lateinit var btnEditName: TextView
     private lateinit var tagUnpaired: LinearLayout
     private lateinit var tagPaired: LinearLayout
+    private lateinit var switchBrickAll: SwitchMaterial
+    private lateinit var tvBrickAllHint: TextView
+    private lateinit var appsSection: LinearLayout
     private var nfcAdapter: NfcAdapter? = null
     private val tagRepo = TagRepository()
     private lateinit var deviceId: String
@@ -72,6 +77,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         btnEditName = findViewById(R.id.btnEditName)
         tagUnpaired = findViewById(R.id.tagUnpaired)
         tagPaired = findViewById(R.id.tagPaired)
+        switchBrickAll = findViewById(R.id.switchBrickAll)
+        tvBrickAllHint = findViewById(R.id.tvBrickAllHint)
+        appsSection = findViewById(R.id.appsSection)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
@@ -90,6 +98,14 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
         btnEditName.setOnClickListener {
             showNameDialog()
+        }
+
+        // Brick Everything toggle
+        switchBrickAll.isChecked = prefs.getBoolean(KEY_BRICK_EVERYTHING, false)
+        updateBrickAllState(switchBrickAll.isChecked)
+        switchBrickAll.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(KEY_BRICK_EVERYTHING, isChecked).apply()
+            updateBrickAllState(isChecked)
         }
 
         updateStatusBanner()
@@ -256,6 +272,18 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private fun updateAppCount() {
         val count = prefs.getStringSet(KEY_BLOCKED_APPS, emptySet())?.size ?: 0
         tvAppCount.text = "$count selected"
+    }
+
+    private fun updateBrickAllState(enabled: Boolean) {
+        if (enabled) {
+            tvBrickAllHint.text = "Every app will be blocked when bricked"
+            appsSection.alpha = 0.3f
+            appsSection.isEnabled = false
+        } else {
+            tvBrickAllHint.text = "Only selected apps will be blocked"
+            appsSection.alpha = 1.0f
+            appsSection.isEnabled = true
+        }
     }
 
     private fun setupAppList() {
