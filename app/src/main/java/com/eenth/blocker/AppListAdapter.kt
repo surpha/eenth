@@ -24,7 +24,6 @@ class AppListAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.ivAppIcon)
         val name: TextView = view.findViewById(R.id.tvAppName)
-        val packageLabel: TextView = view.findViewById(R.id.tvPackageName)
         val switch: SwitchMaterial = view.findViewById(R.id.switchBlocked)
     }
 
@@ -38,7 +37,6 @@ class AppListAdapter(
         val app = apps[position]
         holder.icon.setImageDrawable(app.icon)
         holder.name.text = app.name
-        holder.packageLabel.text = app.packageName
 
         // Prevent triggering listener during rebind
         holder.switch.setOnCheckedChangeListener(null)

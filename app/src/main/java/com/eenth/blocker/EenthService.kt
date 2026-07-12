@@ -80,7 +80,8 @@ class EenthService : AccessibilityService() {
                 true // Block everything except allowlisted packages (already filtered above)
             } else {
                 val blockedApps = prefs.getStringSet(MainActivity.KEY_BLOCKED_APPS, emptySet()) ?: emptySet()
-                blockedApps.contains(packageName)
+                val groupBlocked = GroupManager.getGroupBlockedPackages(prefs)
+                blockedApps.contains(packageName) || groupBlocked.contains(packageName)
             }
 
             if (shouldBlock) {

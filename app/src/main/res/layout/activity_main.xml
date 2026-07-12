@@ -2,180 +2,159 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0D0D0D"
+    android:background="@color/bg_primary"
     android:fillViewport="true">
 
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="40dp">
 
-    <!-- Status Card -->
+    <!-- Brand -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="eenth"
+        android:textColor="@color/text_primary"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="52dp"
+        android:paddingBottom="24dp"
+        android:letterSpacing="-0.02" />
+
+    <!-- Hero Status Card -->
     <LinearLayout
         android:id="@+id/statusCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_status_card">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:paddingHorizontal="28dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="24dp"
+        android:background="@drawable/bg_hero_default">
 
-        <TextView
-            android:id="@+id/tvStatusLabel"
+        <!-- Status row -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="STATUS"
-            android:textColor="#999999"
-            android:textSize="12sp"
-            android:letterSpacing="0.2" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_gravity="center">
 
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="UNBRICKED"
-            android:textColor="#4CAF50"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp" />
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/bg_dot_green" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UNBRICKED"
+                android:textColor="@color/accent_green"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"
+                android:layout_marginStart="12dp" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvStatusHint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tap your NFC tag to activate"
-            android:textColor="#666666"
-            android:textSize="13sp"
+            android:textColor="@color/text_tertiary"
+            android:textSize="14sp"
+            android:layout_gravity="center"
             android:layout_marginTop="8dp" />
 
-    </LinearLayout>
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
 
-    <!-- Tag Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="12dp"
-        android:padding="20dp"
-        android:background="@drawable/bg_status_card">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="YOUR TAG"
-            android:textColor="#999999"
-            android:textSize="12sp"
-            android:letterSpacing="0.2" />
-
-        <!-- Unpaired state -->
+        <!-- Tag: Unpaired -->
         <LinearLayout
             android:id="@+id/tagUnpaired"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🔗"
-                android:textSize="32sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No tag paired"
-                android:textColor="#888888"
-                android:textSize="15sp"
-                android:layout_marginTop="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tap your NFC tag on the back of your phone to pair it"
-                android:textColor="#555555"
-                android:textSize="12sp"
-                android:gravity="center"
-                android:layout_marginTop="4dp" />
+                android:text="Tap NFC tag to pair"
+                android:textColor="@color/text_tertiary"
+                android:textSize="14sp"
+                android:layout_marginStart="12dp" />
 
         </LinearLayout>
 
-        <!-- Paired state -->
+        <!-- Tag: Paired -->
         <LinearLayout
             android:id="@+id/tagPaired"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:visibility="gone">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:text="🏷"
+                android:textSize="18sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🧱"
-                    android:textSize="28sp" />
+            <TextView
+                android:id="@+id/tvTagName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="My Brick"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginStart="12dp"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="12dp">
-
-                    <TextView
-                        android:id="@+id/tvTagName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="My Brick"
-                        android:textColor="#EEEEEE"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvTagId"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ID: 044E5B1A1F1D91"
-                        android:textColor="#555555"
-                        android:textSize="11sp"
-                        android:layout_marginTop="2dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/btnEditName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="✏️"
-                    android:textSize="18sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/btnEditName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✏️"
+                android:textSize="14sp"
+                android:padding="6dp"
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
                 android:id="@+id/btnRepair"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Unpair tag"
-                android:textColor="#D32F2F"
-                android:textSize="12sp"
-                android:padding="4dp"
-                android:layout_marginTop="12dp"
+                android:text="✕"
+                android:textColor="@color/text_tertiary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="6dp"
+                android:layout_marginStart="2dp"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -183,105 +162,152 @@
 
     </LinearLayout>
 
-    <!-- Brick Everything Toggle -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="12dp"
-        android:padding="20dp"
-        android:background="@drawable/bg_status_card">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="BRICK EVERYTHING"
-                    android:textColor="#999999"
-                    android:textSize="12sp"
-                    android:letterSpacing="0.2" />
-
-                <TextView
-                    android:id="@+id/tvBrickAllHint"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Only selected apps will be blocked"
-                    android:textColor="#555555"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
-
-            </LinearLayout>
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switchBrickAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <!-- Section Header -->
-    <LinearLayout
-        android:id="@+id/appsSection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
+    <!-- Block Everything -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="12dp">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="18dp"
+        android:background="@drawable/bg_card">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔒"
+            android:textSize="16sp" />
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="APPS TO BLOCK"
-            android:textColor="#999999"
-            android:textSize="12sp"
-            android:letterSpacing="0.15" />
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
 
-        <TextView
-            android:id="@+id/tvAppCount"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Block Everything"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tvBrickAllHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Only selected apps &amp; groups"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchBrickAll"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 selected"
-            android:textColor="#666666"
-            android:textSize="12sp" />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
-    <!-- App List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvApps"
+    <!-- Groups -->
+    <LinearLayout
+        android:id="@+id/groupsSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:nestedScrollingEnabled="false"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false" />
+        android:orientation="vertical"
+        android:layout_marginTop="32dp">
 
-    </LinearLayout> <!-- appsSection -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Groups"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnAddGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ New"
+                android:textColor="@color/accent_red"
+                android:textSize="14sp"
+                android:padding="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvGroups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:clipToPadding="false" />
+
+    </LinearLayout>
+
+    <!-- Apps -->
+    <LinearLayout
+        android:id="@+id/appsSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="32dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Apps"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAppCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 blocked"
+                android:textColor="@color/text_tertiary"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvApps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:clipToPadding="false" />
+
+    </LinearLayout>
 
 </LinearLayout>
 </androidx.core.widget.NestedScrollView>
