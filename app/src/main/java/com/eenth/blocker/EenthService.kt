@@ -48,14 +48,19 @@ class EenthService : AccessibilityService() {
         unregisterReceiver(stateReceiver)
     }
 
-    // System UI packages to ignore
+    // System UI & essential packages to always ignore
     private val systemUiPackages = setOf(
         "com.android.systemui",
         "com.samsung.android.app.cocktailbarservice",
         "com.samsung.android.edge",
         "com.android.launcher",
         "com.google.android.apps.nexuslauncher",
-        "com.sec.android.app.launcher"
+        "com.sec.android.app.launcher",
+        "com.android.settings",         // Needed to manage accessibility service
+        "android",                      // System chooser/resolver dialog
+        "com.samsung.android.app.resolver", // Samsung app chooser
+        "com.samsung.android.service.tagservice", // Samsung Tags app (NFC)
+        "com.android.nfc"               // System NFC service
     )
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -70,9 +75,15 @@ class EenthService : AccessibilityService() {
             val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
             if (!isBricked) return
 
-            val blockedApps = prefs.getStringSet(MainActivity.KEY_BLOCKED_APPS, emptySet()) ?: emptySet()
+            val brickEverything = prefs.getBoolean(MainActivity.KEY_BRICK_EVERYTHING, false)
+            val shouldBlock = if (brickEverything) {
+                true // Block everything except allowlisted packages (already filtered above)
+            } else {
+                val blockedApps = prefs.getStringSet(MainActivity.KEY_BLOCKED_APPS, emptySet()) ?: emptySet()
+                blockedApps.contains(packageName)
+            }
 
-            if (blockedApps.contains(packageName)) {
+            if (shouldBlock) {
                 Log.d("EenthService", "BLOCKING: $packageName")
                 // Launch the blocker as a full-screen Activity
                 val intent = Intent(this, BlockerActivity::class.java)
