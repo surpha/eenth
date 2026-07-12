@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0D0D0D">
+    android:background="#0D0D0D"
+    android:fillViewport="true">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <!-- Status Card -->
     <LinearLayout
@@ -13,7 +18,9 @@
         android:orientation="vertical"
         android:gravity="center"
         android:padding="32dp"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/bg_status_card">
 
         <TextView
@@ -44,27 +51,135 @@
             android:textSize="13sp"
             android:layout_marginTop="8dp" />
 
-        <TextView
-            android:id="@+id/tvTagStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No tag paired"
-            android:textColor="#444444"
-            android:textSize="11sp"
-            android:layout_marginTop="12dp" />
+    </LinearLayout>
+
+    <!-- Tag Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="12dp"
+        android:padding="20dp"
+        android:background="@drawable/bg_status_card">
 
         <TextView
-            android:id="@+id/btnRepair"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Re-pair Tag"
+            android:text="YOUR TAG"
             android:textColor="#999999"
             android:textSize="12sp"
-            android:padding="8dp"
-            android:layout_marginTop="4dp"
-            android:visibility="gone"
-            android:clickable="true"
-            android:focusable="true" />
+            android:letterSpacing="0.2" />
+
+        <!-- Unpaired state -->
+        <LinearLayout
+            android:id="@+id/tagUnpaired"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔗"
+                android:textSize="32sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No tag paired"
+                android:textColor="#888888"
+                android:textSize="15sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tap your NFC tag on the back of your phone to pair it"
+                android:textColor="#555555"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Paired state -->
+        <LinearLayout
+            android:id="@+id/tagPaired"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🧱"
+                    android:textSize="28sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:id="@+id/tvTagName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="My Brick"
+                        android:textColor="#EEEEEE"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvTagId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ID: 044E5B1A1F1D91"
+                        android:textColor="#555555"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btnEditName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✏️"
+                    android:textSize="18sp"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnRepair"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Unpair tag"
+                android:textColor="#D32F2F"
+                android:textSize="12sp"
+                android:padding="4dp"
+                android:layout_marginTop="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -76,7 +191,7 @@
         android:gravity="center_vertical"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="8dp"
+        android:paddingTop="16dp"
         android:paddingBottom="12dp">
 
         <TextView
@@ -102,11 +217,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvApps"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false" />
 
 </LinearLayout>
+</androidx.core.widget.NestedScrollView>

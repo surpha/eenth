@@ -15,8 +15,12 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +32,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         const val KEY_BLOCKED_APPS = "blocked_apps"
         const val KEY_IS_BRICKED = "is_bricked"
         const val KEY_PAIRED_TAG_ID = "paired_tag_id"
+        const val KEY_TAG_NAME = "tag_name"
         const val ACTION_STATE_CHANGED = "com.eenth.blocker.ACTION_STATE_CHANGED"
     }
 
@@ -35,8 +40,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private lateinit var tvStatus: TextView
     private lateinit var tvStatusHint: TextView
     private lateinit var tvAppCount: TextView
-    private lateinit var tvTagStatus: TextView
+    private lateinit var tvTagName: TextView
+    private lateinit var tvTagId: TextView
     private lateinit var btnRepair: TextView
+    private lateinit var btnEditName: TextView
+    private lateinit var tagUnpaired: LinearLayout
+    private lateinit var tagPaired: LinearLayout
     private var nfcAdapter: NfcAdapter? = null
     private val tagRepo = TagRepository()
     private lateinit var deviceId: String
@@ -57,24 +66,34 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         tvStatus = findViewById(R.id.tvStatus)
         tvStatusHint = findViewById(R.id.tvStatusHint)
         tvAppCount = findViewById(R.id.tvAppCount)
-        tvTagStatus = findViewById(R.id.tvTagStatus)
+        tvTagName = findViewById(R.id.tvTagName)
+        tvTagId = findViewById(R.id.tvTagId)
         btnRepair = findViewById(R.id.btnRepair)
+        btnEditName = findViewById(R.id.btnEditName)
+        tagUnpaired = findViewById(R.id.tagUnpaired)
+        tagPaired = findViewById(R.id.tagPaired)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         btnRepair.setOnClickListener {
             val oldTagId = prefs.getString(KEY_PAIRED_TAG_ID, null)
-            prefs.edit().remove(KEY_PAIRED_TAG_ID).apply()
-            // Unpair from server in background
+            prefs.edit()
+                .remove(KEY_PAIRED_TAG_ID)
+                .remove(KEY_TAG_NAME)
+                .apply()
             if (oldTagId != null) {
                 Thread { tagRepo.unpairTag(oldTagId, deviceId) }.start()
             }
             Toast.makeText(this, "Tag unpaired. Tap a new tag to pair.", Toast.LENGTH_SHORT).show()
-            updateTagStatus()
+            updateTagSection()
+        }
+
+        btnEditName.setOnClickListener {
+            showNameDialog()
         }
 
         updateStatusBanner()
-        updateTagStatus()
+        updateTagSection()
         setupAppList()
     }
 
@@ -120,9 +139,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                     prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
                     eraseTagData(tag)
                     runOnUiThread {
-                        Toast.makeText(this, "Tag paired! This is now your Eenth key.", Toast.LENGTH_LONG).show()
-                        updateTagStatus()
-                        updateStatusBanner()
+                        Toast.makeText(this, "Tag paired!", Toast.LENGTH_SHORT).show()
+                        updateTagSection()
+                        showNameDialog()
                     }
                 }
                 is PairResult.AlreadyTakenByOther -> {
@@ -131,13 +150,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                     }
                 }
                 is PairResult.Error -> {
-                    // Allow local pairing as fallback if server is unreachable
                     prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
                     eraseTagData(tag)
                     runOnUiThread {
-                        Toast.makeText(this, "Tag paired locally (offline).", Toast.LENGTH_LONG).show()
-                        updateTagStatus()
-                        updateStatusBanner()
+                        Toast.makeText(this, "Tag paired (offline).", Toast.LENGTH_SHORT).show()
+                        updateTagSection()
+                        showNameDialog()
                     }
                 }
             }
@@ -200,17 +218,39 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         }
     }
 
-    private fun updateTagStatus() {
+    private fun updateTagSection() {
         val pairedId = prefs.getString(KEY_PAIRED_TAG_ID, null)
         if (pairedId != null) {
-            tvTagStatus.text = "Tag paired: $pairedId"
-            tvTagStatus.setTextColor(0xFF4CAF50.toInt())
-            btnRepair.visibility = android.view.View.VISIBLE
+            tagUnpaired.visibility = View.GONE
+            tagPaired.visibility = View.VISIBLE
+            val name = prefs.getString(KEY_TAG_NAME, null) ?: "My Brick"
+            tvTagName.text = name
+            tvTagId.text = "ID: $pairedId"
         } else {
-            tvTagStatus.text = "No tag paired — tap any NFC tag to pair"
-            tvTagStatus.setTextColor(0xFF999999.toInt())
-            btnRepair.visibility = android.view.View.GONE
+            tagUnpaired.visibility = View.VISIBLE
+            tagPaired.visibility = View.GONE
         }
+    }
+
+    private fun showNameDialog() {
+        val input = EditText(this)
+        input.hint = "e.g. My Brick, Desk Tag, Focus Key"
+        input.setText(prefs.getString(KEY_TAG_NAME, ""))
+        input.setTextColor(0xFFEEEEEE.toInt())
+        input.setHintTextColor(0xFF666666.toInt())
+        input.setBackgroundColor(0xFF1A1A1A.toInt())
+        input.setPadding(48, 32, 48, 32)
+
+        AlertDialog.Builder(this, androidx.appcompat.R.style.Theme_AppCompat_Dialog)
+            .setTitle("Name your tag")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val name = input.text.toString().trim().ifEmpty { "My Brick" }
+                prefs.edit().putString(KEY_TAG_NAME, name).apply()
+                updateTagSection()
+            }
+            .setNegativeButton("Skip", null)
+            .show()
     }
 
     private fun updateAppCount() {
