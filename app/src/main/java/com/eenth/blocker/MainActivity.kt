@@ -13,6 +13,7 @@ import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private lateinit var tvTagStatus: TextView
     private lateinit var btnRepair: TextView
     private var nfcAdapter: NfcAdapter? = null
+    private val tagRepo = TagRepository()
+    private lateinit var deviceId: String
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -57,9 +60,15 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         tvTagStatus = findViewById(R.id.tvTagStatus)
         btnRepair = findViewById(R.id.btnRepair)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         btnRepair.setOnClickListener {
+            val oldTagId = prefs.getString(KEY_PAIRED_TAG_ID, null)
             prefs.edit().remove(KEY_PAIRED_TAG_ID).apply()
+            // Unpair from server in background
+            if (oldTagId != null) {
+                Thread { tagRepo.unpairTag(oldTagId, deviceId) }.start()
+            }
             Toast.makeText(this, "Tag unpaired. Tap a new tag to pair.", Toast.LENGTH_SHORT).show()
             updateTagStatus()
         }
@@ -100,19 +109,42 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         val pairedId = prefs.getString(KEY_PAIRED_TAG_ID, null)
 
         if (pairedId == null) {
-            // First tap — pair this tag
-            prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
-            eraseTagData(tag)
+            // First tap — try to pair this tag via server
             runOnUiThread {
-                Toast.makeText(this, "Tag paired! This is now your Eenth key.", Toast.LENGTH_LONG).show()
-                updateTagStatus()
-                updateStatusBanner()
+                Toast.makeText(this, "Pairing tag...", Toast.LENGTH_SHORT).show()
+            }
+
+            val result = tagRepo.pairTag(tagId, deviceId)
+            when (result) {
+                is PairResult.Success, is PairResult.AlreadyPairedToThis -> {
+                    prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
+                    eraseTagData(tag)
+                    runOnUiThread {
+                        Toast.makeText(this, "Tag paired! This is now your Eenth key.", Toast.LENGTH_LONG).show()
+                        updateTagStatus()
+                        updateStatusBanner()
+                    }
+                }
+                is PairResult.AlreadyTakenByOther -> {
+                    runOnUiThread {
+                        Toast.makeText(this, "This tag is already registered to another device.", Toast.LENGTH_LONG).show()
+                    }
+                }
+                is PairResult.Error -> {
+                    // Allow local pairing as fallback if server is unreachable
+                    prefs.edit().putString(KEY_PAIRED_TAG_ID, tagId).apply()
+                    eraseTagData(tag)
+                    runOnUiThread {
+                        Toast.makeText(this, "Tag paired locally (offline).", Toast.LENGTH_LONG).show()
+                        updateTagStatus()
+                        updateStatusBanner()
+                    }
+                }
             }
             return
         }
 
         if (tagId != pairedId) {
-            // Wrong tag
             runOnUiThread {
                 Toast.makeText(this, "Unrecognized tag. Only your paired tag works.", Toast.LENGTH_SHORT).show()
             }

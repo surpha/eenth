@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 
@@ -13,11 +14,14 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
 
     private var nfcAdapter: NfcAdapter? = null
     private lateinit var prefs: SharedPreferences
+    private val tagRepo = TagRepository()
+    private lateinit var deviceId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         if (nfcAdapter == null) {
             Toast.makeText(this, "No NFC Hardware found!", Toast.LENGTH_SHORT).show()
@@ -77,45 +81,63 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
         val tagId = tag.id.toHexString()
         val pairedId = prefs.getString(MainActivity.KEY_PAIRED_TAG_ID, null)
 
-        // If no tag is paired yet, reject — must pair from MainActivity first
         if (pairedId == null) {
-            Toast.makeText(this, "No tag paired yet. Open Eenth to pair.", Toast.LENGTH_SHORT).show()
+            runOnUiThread {
+                Toast.makeText(this, "No tag paired yet. Open Eenth to pair.", Toast.LENGTH_SHORT).show()
+            }
             finish()
             return
         }
 
-        // Verify it's the correct tag
         if (tagId != pairedId) {
-            Toast.makeText(this, "Unrecognized tag.", Toast.LENGTH_SHORT).show()
+            runOnUiThread {
+                Toast.makeText(this, "Unrecognized tag.", Toast.LENGTH_SHORT).show()
+            }
             finish()
             return
         }
 
-        // Correct tag — toggle
+        // Verify with server (in background thread — we're already off main thread from reader mode)
+        val verifyResult = tagRepo.verifyTag(tagId, deviceId)
+        when (verifyResult) {
+            is VerifyResult.WrongDevice -> {
+                runOnUiThread {
+                    Toast.makeText(this, "This tag is registered to another device.", Toast.LENGTH_LONG).show()
+                }
+                finish()
+                return
+            }
+            is VerifyResult.Error -> {
+                // Allow offline toggle (local pairing still valid)
+                Log.d("EenthNfc", "Server unreachable, allowing local toggle")
+            }
+            else -> { /* Valid or NotRegistered — proceed */ }
+        }
+
+        // Toggle bricked state
         val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
         val newState = !isBricked
         prefs.edit().putBoolean(MainActivity.KEY_IS_BRICKED, newState).apply()
 
-        val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        runOnUiThread {
+            val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
-        // Notify service and MainActivity
-        val stateIntent = Intent(EenthService.ACTION_STATE_CHANGED)
-        sendBroadcast(stateIntent)
+            val stateIntent = Intent(EenthService.ACTION_STATE_CHANGED)
+            sendBroadcast(stateIntent)
 
-        // Close the blocker activity
-        val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)
-        sendBroadcast(closeIntent)
+            val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)
+            sendBroadcast(closeIntent)
 
-        // If unbricking, redirect to Eenth main screen
-        if (!newState) {
-            val mainIntent = Intent(this, MainActivity::class.java)
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(mainIntent)
+            if (!newState) {
+                val mainIntent = Intent(this, MainActivity::class.java)
+                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(mainIntent)
+            }
+
+            Log.d("EenthNfc", "Toggled to: bricked=$newState")
+            finish()
         }
-
-        Log.d("EenthNfc", "Toggled to: bricked=$newState")
-        finish()
     }
 
     private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
