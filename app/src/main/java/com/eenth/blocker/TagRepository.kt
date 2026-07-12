@@ -61,6 +61,7 @@ class TagRepository {
                 val body = JSONObject().apply {
                     put("tag_uid", tagUid)
                     put("device_id", deviceId)
+                    put("tag_name", "My Brick")
                 }.toString()
 
                 val request = Request.Builder()
@@ -134,6 +135,34 @@ class TagRepository {
             response.isSuccessful
         } catch (e: Exception) {
             Log.e(TAG, "Unpair error: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Update tag name on server.
+     */
+    fun updateTagName(tagUid: String, deviceId: String, tagName: String): Boolean {
+        return try {
+            val body = JSONObject().apply {
+                put("tag_name", tagName)
+            }.toString()
+
+            val request = Request.Builder()
+                .url("$SUPABASE_URL/rest/v1/tag_registrations?tag_uid=eq.$tagUid")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Prefer", "return=minimal")
+                .addHeader("x-device-id", deviceId)
+                .patch(body.toRequestBody(jsonType))
+                .build()
+
+            val response = client.newCall(request).execute()
+            Log.d(TAG, "Update tag name response: ${response.code}")
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e(TAG, "Update tag name error: ${e.message}")
             false
         }
     }

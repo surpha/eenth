@@ -1,6 +1,8 @@
 {
     "chat.tools.terminal.autoApprove": {
         "./gradlew": true,
-        "git checkout": true
+        "git checkout": true,
+        "git stash": true,
+        "git pull": true
     }
 }
