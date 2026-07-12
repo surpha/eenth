@@ -264,6 +264,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                 val name = input.text.toString().trim().ifEmpty { "My Brick" }
                 prefs.edit().putString(KEY_TAG_NAME, name).apply()
                 updateTagSection()
+                // Sync to server
+                val tagUid = prefs.getString(KEY_PAIRED_TAG_ID, null)
+                if (tagUid != null) {
+                    Thread { tagRepo.updateTagName(tagUid, deviceId, name) }.start()
+                }
             }
             .setNegativeButton("Skip", null)
             .show()
