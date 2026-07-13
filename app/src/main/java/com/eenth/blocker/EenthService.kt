@@ -56,11 +56,30 @@ class EenthService : AccessibilityService() {
         "com.android.launcher",
         "com.google.android.apps.nexuslauncher",
         "com.sec.android.app.launcher",
-        "com.android.settings",         // Needed to manage accessibility service
-        "android",                      // System chooser/resolver dialog
-        "com.samsung.android.app.resolver", // Samsung app chooser
-        "com.samsung.android.service.tagservice", // Samsung Tags app (NFC)
-        "com.android.nfc"               // System NFC service
+        "com.android.settings",
+        "android",
+        "com.samsung.android.app.resolver",
+        "com.samsung.android.service.tagservice",
+        "com.android.nfc"
+    )
+
+    // Payment & banking apps — never blocked to avoid accessibility warnings
+    private val paymentApps = setOf(
+        // Google Pay
+        "com.google.android.apps.nbu.paisa.user",
+        "com.google.android.apps.walletnfcrel",
+        // Indian UPI
+        "net.one97.paytm",
+        "com.phonepe.app",
+        "in.org.npci.upiapp",
+        "in.amazon.mShop.android.shopping",
+        "com.mobikwik_new",
+        "com.freecharge.android",
+        // Samsung Pay
+        "com.samsung.android.spay",
+        "com.samsung.android.samsungpay.gear",
+        // Banking
+        "com.android.vending",  // Play Store (has payments)
     )
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -71,6 +90,9 @@ class EenthService : AccessibilityService() {
             if (packageName == this.packageName) return
             if (packageName == "com.eenth.blocker") return
             if (systemUiPackages.contains(packageName)) return
+
+            // Never block payment/banking apps
+            if (paymentApps.contains(packageName)) return
 
             val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
             if (!isBricked) return

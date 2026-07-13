@@ -94,7 +94,7 @@ class BlockerActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
         runOnUiThread {
             Toast.makeText(this, "UNBRICKED! Apps unlocked.", Toast.LENGTH_LONG).show()
-            sendBroadcast(Intent(EenthService.ACTION_STATE_CHANGED))
+            sendBroadcast(Intent(MainActivity.ACTION_STATE_CHANGED))
             sendBroadcast(Intent(ACTION_CLOSE_BLOCKER))
 
             val mainIntent = Intent(this, MainActivity::class.java)

@@ -123,7 +123,7 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
             val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
-            val stateIntent = Intent(EenthService.ACTION_STATE_CHANGED)
+            val stateIntent = Intent(MainActivity.ACTION_STATE_CHANGED)
             sendBroadcast(stateIntent)
 
             val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)

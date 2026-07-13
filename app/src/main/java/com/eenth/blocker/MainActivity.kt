@@ -133,7 +133,6 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         updateStatusBanner()
 
         // Enable NFC reader mode — intercepts ALL tag taps while app is visible
-        // NOT skipping NDEF check so we can read/write NDEF to erase tag data
         val flags = NfcAdapter.FLAG_READER_NFC_A or
                     NfcAdapter.FLAG_READER_NFC_B
         nfcAdapter?.enableReaderMode(this, this, flags, null)
