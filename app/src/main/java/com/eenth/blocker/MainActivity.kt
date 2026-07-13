@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private var nfcAdapter: NfcAdapter? = null
     private val tagRepo = TagRepository()
     private lateinit var deviceId: String
+    private var adminMode = false
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -120,6 +121,28 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         updateTagSection()
         setupAppList()
         setupGroups()
+
+        // Long-press brand logo 5 times within 3 seconds → toggle admin mode
+        var tapCount = 0
+        var firstTapTime = 0L
+        findViewById<TextView>(R.id.tvBrand).setOnClickListener {
+            val now = System.currentTimeMillis()
+            if (now - firstTapTime > 3000) {
+                tapCount = 0
+                firstTapTime = now
+            }
+            tapCount++
+            if (tapCount >= 7) {
+                tapCount = 0
+                adminMode = !adminMode
+                if (adminMode) {
+                    showAdminSheet()
+                } else {
+                    Toast.makeText(this, "Admin mode OFF", Toast.LENGTH_SHORT).show()
+                    findViewById<TextView>(R.id.tvBrand).setTextColor(0xFFFFFFFF.toInt())
+                }
+            }
+        }
     }
 
     override fun onResume() {
@@ -149,6 +172,18 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         if (tag == null) return
 
         val tagId = tag.id.toHexString()
+
+        // Admin mode: register tag as approved brick
+        if (adminMode) {
+            Thread {
+                val success = tagRepo.registerApprovedTag(tagId)
+                runOnUiThread {
+                    addAdminTagEntry(tagId, success)
+                }
+            }.start()
+            return
+        }
+
         val pairedId = prefs.getString(KEY_PAIRED_TAG_ID, null)
 
         if (pairedId == null) {
@@ -171,6 +206,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                 is PairResult.AlreadyTakenByOther -> {
                     runOnUiThread {
                         Toast.makeText(this, "This tag is already registered to another device.", Toast.LENGTH_LONG).show()
+                    }
+                }
+                is PairResult.NotApproved -> {
+                    runOnUiThread {
+                        Toast.makeText(this, "This tag is not an approved Eenth brick.", Toast.LENGTH_LONG).show()
                     }
                 }
                 is PairResult.Error -> {
@@ -283,6 +323,142 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
             }
             .setNegativeButton("Skip", null)
             .show()
+    }
+
+    private var adminTagList: LinearLayout? = null
+    private var adminTagCount: TextView? = null
+    private var adminSheet: BottomSheetDialog? = null
+
+    private fun showAdminSheet() {
+        findViewById<TextView>(R.id.tvBrand).setTextColor(0xFFFF3B30.toInt())
+
+        val sheet = BottomSheetDialog(this)
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(0xFF111111.toInt())
+            setPadding(0, 0, 0, dpToPx(24))
+        }
+
+        // Handle
+        val handle = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dpToPx(40), dpToPx(4)).apply {
+                gravity = android.view.Gravity.CENTER_HORIZONTAL
+                topMargin = dpToPx(12)
+                bottomMargin = dpToPx(16)
+            }
+            setBackgroundResource(R.drawable.bg_handle)
+        }
+        root.addView(handle)
+
+        // Title
+        val title = TextView(this).apply {
+            text = "Admin — Register Bricks"
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 18f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(dpToPx(24), 0, dpToPx(24), dpToPx(4))
+        }
+        root.addView(title)
+
+        // Subtitle with count
+        val countTv = TextView(this).apply {
+            text = "Scan NFC tags to register. 0 scanned."
+            setTextColor(0xFF8E8E93.toInt())
+            textSize = 13f
+            setPadding(dpToPx(24), 0, dpToPx(24), dpToPx(16))
+        }
+        root.addView(countTv)
+        adminTagCount = countTv
+
+        // Divider
+        root.addView(View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1)
+            setBackgroundColor(0xFF1C1C1E.toInt())
+        })
+
+        // Scrollable tag list
+        val scroll = android.widget.ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(300)
+            )
+        }
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(24), dpToPx(8), dpToPx(24), dpToPx(8))
+        }
+        scroll.addView(list)
+        root.addView(scroll)
+
+        // Empty state
+        val emptyHint = TextView(this).apply {
+            text = "Hold an NFC tag to the back of your phone..."
+            setTextColor(0xFF48484A.toInt())
+            textSize = 14f
+            gravity = android.view.Gravity.CENTER
+            setPadding(dpToPx(24), dpToPx(40), dpToPx(24), dpToPx(40))
+            tag = "empty_hint"
+        }
+        list.addView(emptyHint)
+
+        adminTagList = list
+        adminSheet = sheet
+
+        sheet.setContentView(root)
+        sheet.setOnDismissListener {
+            adminMode = false
+            adminTagList = null
+            adminTagCount = null
+            adminSheet = null
+            findViewById<TextView>(R.id.tvBrand).setTextColor(0xFFFFFFFF.toInt())
+        }
+        sheet.show()
+    }
+
+    private var adminScannedCount = 0
+
+    private fun addAdminTagEntry(tagUid: String, success: Boolean) {
+        val list = adminTagList ?: return
+
+        // Remove empty hint on first scan
+        val hint = list.findViewWithTag<View>("empty_hint")
+        if (hint != null) list.removeView(hint)
+
+        adminScannedCount++
+
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10), 0, dpToPx(10))
+        }
+
+        val status = TextView(this).apply {
+            text = if (success) "✓" else "✗"
+            setTextColor(if (success) 0xFF30D158.toInt() else 0xFFFF3B30.toInt())
+            textSize = 18f
+            setPadding(0, 0, dpToPx(12), 0)
+        }
+
+        val uid = TextView(this).apply {
+            text = tagUid
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 14f
+            typeface = android.graphics.Typeface.MONOSPACE
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val label = TextView(this).apply {
+            text = if (success) "Registered" else "Failed"
+            setTextColor(if (success) 0xFF30D158.toInt() else 0xFFFF3B30.toInt())
+            textSize = 12f
+        }
+
+        row.addView(status)
+        row.addView(uid)
+        row.addView(label)
+        list.addView(row, 0) // newest at top
+
+        adminTagCount?.text = "Scan NFC tags to register. $adminScannedCount scanned."
     }
 
     private fun updateAppCount() {

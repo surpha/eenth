@@ -13,6 +13,7 @@ sealed class PairResult {
     object Success : PairResult()
     object AlreadyTakenByOther : PairResult()
     object AlreadyPairedToThis : PairResult()
+    object NotApproved : PairResult()
     data class Error(val message: String) : PairResult()
 }
 
@@ -46,6 +47,12 @@ class TagRepository {
      */
     fun pairTag(tagUid: String, deviceId: String): PairResult {
         return try {
+            // Check if tag is in the approved list
+            if (!isTagApproved(tagUid)) {
+                Log.d(TAG, "Tag not approved: $tagUid")
+                return PairResult.NotApproved
+            }
+
             // First check if tag is already registered
             val existing = getRegistration(tagUid)
 
@@ -181,5 +188,58 @@ class TagRepository {
         val body = response.body?.string() ?: return null
         val arr = JSONArray(body)
         return if (arr.length() > 0) arr.getJSONObject(0) else null
+    }
+
+    private fun isTagApproved(tagUid: String): Boolean {
+        return try {
+            val request = Request.Builder()
+                .url("$SUPABASE_URL/rest/v1/approved_tags?tag_uid=eq.$tagUid&select=tag_uid")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                Log.e(TAG, "Approved check failed: ${response.code}")
+                return false // Deny if check fails
+            }
+
+            val body = response.body?.string() ?: return false
+            val arr = JSONArray(body)
+            arr.length() > 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Approved check error: ${e.message}")
+            false // Deny if offline/error
+        }
+    }
+
+    fun registerApprovedTag(tagUid: String): Boolean {
+        return try {
+            val body = JSONObject().apply {
+                put("tag_uid", tagUid)
+            }.toString()
+
+            val request = Request.Builder()
+                .url("$SUPABASE_URL/rest/v1/approved_tags")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Prefer", "return=minimal")
+                .post(body.toRequestBody(jsonType))
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful || response.code == 409) {
+                Log.d(TAG, "Tag approved: $tagUid (${response.code})")
+                true
+            } else {
+                Log.e(TAG, "Approve failed: ${response.code} ${response.body?.string()}")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Approve error: ${e.message}")
+            false
+        }
     }
 }
