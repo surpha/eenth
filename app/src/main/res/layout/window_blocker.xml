@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0D0D0D">
+    android:background="#000000">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -11,35 +11,45 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🧱"
-            android:textSize="64sp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_dot_red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BRICKED"
+                android:textColor="#FF453A"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BRICKED"
-            android:textColor="#D32F2F"
-            android:textSize="36sp"
+            android:text="blocked"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:letterSpacing="0.1" />
+            android:fontFamily="sans-serif-light"
+            android:letterSpacing="-0.03"
+            android:layout_marginTop="12dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="This app is blocked."
-            android:textColor="#666666"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tap your NFC tag to unlock"
-            android:textColor="#444444"
+            android:text="tap brick to unbrick"
+            android:textColor="#48484A"
             android:textSize="13sp"
             android:layout_marginTop="24dp" />
 

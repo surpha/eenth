@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_primary">
+
+<androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:fillViewport="true">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="24dp">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Insights"
+        android:textColor="@color/text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:paddingTop="56dp"
+        android:paddingBottom="28dp"
+        android:letterSpacing="0.08" />
+
+    <!-- Today's Overview - 2x2 grid -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvScreenTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:fontFamily="sans-serif-thin" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="screen time"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:id="@+id/tvFocusTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0m"
+                    android:textColor="@color/accent_green"
+                    android:textSize="26sp"
+                    android:fontFamily="sans-serif-thin" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="focused"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvPickups"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:fontFamily="sans-serif-thin" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="pickups"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:id="@+id/tvStatSessions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:fontFamily="sans-serif-thin" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="sessions"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Streak -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_card"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="16dp">
+
+        <TextView
+            android:id="@+id/tvStreak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/accent_orange"
+            android:textSize="22sp"
+            android:fontFamily="sans-serif-thin" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" day streak"
+            android:textColor="@color/text_tertiary"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+    <!-- Focus Time Chart -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Focus Time"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        android:paddingStart="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="8dp" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chartFocus"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/bg_card"
+        android:padding="12dp" />
+
+    <!-- Screen Time Chart -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Screen Time"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        android:paddingStart="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="8dp" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chartScreenTime"
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/bg_card"
+        android:padding="12dp" />
+
+    <!-- Pickups Chart -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pickups"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        android:paddingStart="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="8dp" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chartPickups"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/bg_card"
+        android:padding="12dp" />
+
+    <!-- Most Used Apps -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Most Used Today"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        android:paddingStart="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="12dp" />
+
+    <com.github.mikephil.charting.charts.HorizontalBarChart
+        android:id="@+id/chartTopApps"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@drawable/bg_card"
+        android:padding="12dp" />
+
+    <!-- Usage permission hint -->
+    <TextView
+        android:id="@+id/tvPermHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="tap to grant usage access for screen time data"
+        android:textColor="@color/text_tertiary"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:paddingVertical="20dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>
+</androidx.core.widget.NestedScrollView>
+
+<!-- Bottom Nav -->
+<View
+    android:layout_width="match_parent"
+    android:layout_height="0.5dp"
+    android:background="@color/divider" />
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:paddingTop="10dp"
+    android:paddingBottom="28dp"
+    android:background="#000000">
+
+    <LinearLayout
+        android:id="@+id/navHome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_nav_home"
+            android:tint="@color/text_tertiary"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:textColor="@color/text_tertiary"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navInsights"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_nav_insights"
+            android:tint="@color/text_primary"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Insights"
+            android:textColor="@color/text_primary"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
+
+</LinearLayout>
