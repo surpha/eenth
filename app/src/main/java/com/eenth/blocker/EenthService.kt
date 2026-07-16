@@ -22,7 +22,7 @@ class EenthService : AccessibilityService() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ACTION_STATE_CHANGED) {
                 val isBricked = prefs.getBoolean(MainActivity.KEY_IS_BRICKED, false)
-                Log.d("EenthService", "State changed. Bricked: $isBricked")
+                Log.d("BlockService", "State changed. Blocked: $isBricked")
                 if (!isBricked) {
                     // Send user home and dismiss the blocker activity
                     val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)
@@ -107,7 +107,7 @@ class EenthService : AccessibilityService() {
             }
 
             if (shouldBlock) {
-                Log.d("EenthService", "BLOCKING: $packageName")
+                Log.d("BlockService", "BLOCKING: $packageName")
                 // Launch the blocker as a full-screen Activity
                 val intent = Intent(this, BlockerActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

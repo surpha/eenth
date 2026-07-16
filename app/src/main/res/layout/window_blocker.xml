@@ -25,7 +25,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BRICKED"
+                android:text="BLOCKED"
                 android:textColor="#FF453A"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="tap brick to unbrick"
+            android:text="tap block to unblock"
             android:textColor="#48484A"
             android:textSize="13sp"
             android:layout_marginTop="24dp" />

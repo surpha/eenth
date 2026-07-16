@@ -90,10 +90,10 @@ class BlockerActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
         // Unbrick
         prefs.edit().putBoolean(MainActivity.KEY_IS_BRICKED, false).apply()
-        Log.d("EenthNfc", "Unbricked via BlockerActivity NFC tap")
+        Log.d("BlockNfc", "Unblocked via BlockerActivity NFC tap")
 
         runOnUiThread {
-            Toast.makeText(this, "UNBRICKED! Apps unlocked.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "UNBLOCKED! Apps unlocked.", Toast.LENGTH_LONG).show()
             sendBroadcast(Intent(MainActivity.ACTION_STATE_CHANGED))
             sendBroadcast(Intent(ACTION_CLOSE_BLOCKER))
 

@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     }
 
     private lateinit var prefs: SharedPreferences
+    private lateinit var tvBrand: TextView
     private lateinit var statusCard: LinearLayout
     private lateinit var statusDot: View
     private lateinit var tvStatus: TextView
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         setContentView(R.layout.activity_main)
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        tvBrand = findViewById(R.id.tvBrand)
         statusCard = findViewById(R.id.statusCard)
         statusDot = findViewById(R.id.statusDot)
         tvStatus = findViewById(R.id.tvStatus)
@@ -155,7 +157,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         // Long-press brand logo 5 times within 3 seconds → toggle admin mode
         var tapCount = 0
         var firstTapTime = 0L
-        findViewById<TextView>(R.id.tvBrand).setOnClickListener {
+        tvBrand.setOnClickListener {
             val now = System.currentTimeMillis()
             if (now - firstTapTime > 3000) {
                 tapCount = 0
@@ -169,7 +171,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                     showAdminSheet()
                 } else {
                     Toast.makeText(this, "Admin mode OFF", Toast.LENGTH_SHORT).show()
-                    findViewById<TextView>(R.id.tvBrand).setTextColor(0xFFFFFFFF.toInt())
+                    updateStatusBanner()
                 }
             }
         }
@@ -201,7 +203,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     }
 
     override fun onTagDiscovered(tag: Tag?) {
-        Log.d("EenthNfc", "NFC tag detected in MainActivity!")
+        Log.d("BlockNfc", "NFC tag detected in MainActivity!")
         if (tag == null) return
 
         val tagId = tag.id.toHexString()
@@ -243,7 +245,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                 }
                 is PairResult.NotApproved -> {
                     runOnUiThread {
-                        Toast.makeText(this, "This tag is not an approved Eenth brick.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "This tag is not an approved Block tag.", Toast.LENGTH_LONG).show()
                     }
                 }
                 is PairResult.Error -> {
@@ -292,7 +294,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         }
 
         runOnUiThread {
-            val message = if (newState) "BRICKED" else "UNBRICKED"
+            val message = if (newState) "BLOCKED" else "UNBLOCKED"
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             updateStatusBanner()
             updateStats()
@@ -327,18 +329,22 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private fun updateStatusBanner() {
         val isBricked = prefs.getBoolean(KEY_IS_BRICKED, false)
         if (isBricked) {
+            tvBrand.text = "BLOCKIN"
+            tvBrand.setTextColor(0xFFFF453A.toInt())
             statusCard.setBackgroundResource(R.drawable.bg_hero_bricked)
             statusDot.setBackgroundResource(R.drawable.bg_dot_red)
-            tvStatus.text = "BRICKED"
+            tvStatus.text = "BLOCKED"
             tvStatus.setTextColor(0xFFFF453A.toInt())
-            tvStatusHint.text = "tap brick to unbrick"
+            tvStatusHint.text = "tap block to unblock"
             updateTimerDisplay()
         } else {
+            tvBrand.text = "BLOCK"
+            tvBrand.setTextColor(0xFFFFFFFF.toInt())
             statusCard.setBackgroundResource(R.drawable.bg_hero_default)
             statusDot.setBackgroundResource(R.drawable.bg_dot_green)
-            tvStatus.text = "UNBRICKED"
+            tvStatus.text = "UNBLOCKED"
             tvStatus.setTextColor(0xFF32D74B.toInt())
-            tvStatusHint.text = "tap brick to start a session"
+            tvStatusHint.text = "tap block to start a session"
             tvTimer.text = "0:00:00"
         }
     }

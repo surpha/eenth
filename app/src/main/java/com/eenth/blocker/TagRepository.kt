@@ -68,7 +68,7 @@ class TagRepository {
                 val body = JSONObject().apply {
                     put("tag_uid", tagUid)
                     put("device_id", deviceId)
-                    put("tag_name", "My Brick")
+                    put("tag_name", "My Block")
                 }.toString()
 
                 val request = Request.Builder()

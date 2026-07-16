@@ -20,17 +20,22 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Eenth">
+        android:theme="@style/Theme.Block">
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Block">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Eenth">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:theme="@style/Theme.Block">
         </activity>
 
         <service
@@ -48,7 +53,7 @@
 
         <service
             android:name=".EenthTile"
-            android:label="Eenth"
+            android:label="Block"
             android:icon="@drawable/ic_launcher_foreground"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
@@ -60,7 +65,7 @@
         <activity
             android:name=".BlockerActivity"
             android:exported="false"
-            android:theme="@style/Theme.Eenth"
+            android:theme="@style/Theme.Block"
             android:excludeFromRecents="true"
             android:launchMode="singleTop"
             android:noHistory="true" />
@@ -86,7 +91,7 @@
         <activity
             android:name=".StatsActivity"
             android:exported="false"
-            android:theme="@style/Theme.Eenth" />
+            android:theme="@style/Theme.Block" />
         
     </application>
 

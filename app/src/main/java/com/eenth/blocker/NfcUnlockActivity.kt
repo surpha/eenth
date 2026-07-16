@@ -120,7 +120,7 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
         prefs.edit().putBoolean(MainActivity.KEY_IS_BRICKED, newState).apply()
 
         runOnUiThread {
-            val message = if (newState) "BRICKED! Apps are now blocked." else "UNBRICKED! Apps unlocked."
+            val message = if (newState) "BLOCKED! Apps are now blocked." else "UNBLOCKED! Apps unlocked."
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
             val stateIntent = Intent(MainActivity.ACTION_STATE_CHANGED)
@@ -135,7 +135,7 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
                 startActivity(mainIntent)
             }
 
-            Log.d("EenthNfc", "Toggled to: bricked=$newState")
+            Log.d("BlockNfc", "Toggled to: blocked=$newState")
             finish()
         }
     }

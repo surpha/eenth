@@ -22,15 +22,15 @@
         android:id="@+id/tvBrand"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="eenth"
+        android:text="BLOCK"
         android:textColor="@color/text_primary"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:paddingTop="56dp"
         android:paddingBottom="28dp"
-        android:letterSpacing="0.08" />
+        android:letterSpacing="0.12" />
 
     <!-- Hero Status Card -->
     <LinearLayout
@@ -63,7 +63,7 @@
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UNBRICKED"
+                android:text="UNBLOCKED"
                 android:textColor="@color/accent_green"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -89,7 +89,7 @@
             android:id="@+id/tvStatusHint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="tap brick to start a session"
+            android:text="tap block to start a session"
             android:textColor="@color/text_tertiary"
             android:textSize="13sp"
             android:layout_marginTop="12dp" />
@@ -199,7 +199,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="no brick paired"
+                android:text="no block paired"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:layout_marginStart="12dp" />
@@ -225,7 +225,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="My Brick"
+                android:text="My Block"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:layout_marginStart="12dp"
