@@ -1,0 +1,175 @@
+.App {
+  min-height: 100vh;
+}
+
+:root {
+  --cream: #f2ede4;
+  --cream-2: #ece5d8;
+  --ink: #1a1a1a;
+  --ink-soft: #2b2b2b;
+  --muted: #6b6b6b;
+  --line: #d9d1c1;
+}
+
+html, body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.font-sans-tight {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.section-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.btn-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: #f2ede4;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1), background 220ms;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+.btn-ink:hover { background: #000; transform: translateY(-1px); }
+
+.btn-outline-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 13px 26px;
+  font-weight: 500;
+  transition: background 220ms, color 220ms;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+.btn-outline-ink:hover { background: var(--ink); color: var(--cream); }
+
+.grain {
+  position: relative;
+}
+.grain::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+.marquee { display: flex; overflow: hidden; gap: 4rem; }
+.marquee-track {
+  display: flex; gap: 4rem;
+  animation: marquee 34s linear infinite;
+  min-width: 200%;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.card-lift { transition: transform 280ms cubic-bezier(.2,.7,.2,1), box-shadow 280ms; }
+.card-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(0,0,0,0.18); }
+
+.tilt-in {
+  animation: tiltIn 900ms cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes tiltIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.check-mark {
+  width: 22px; height: 22px; border-radius: 999px;
+  background: var(--ink); color: var(--cream);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cross-mark {
+  width: 22px; height: 22px; border-radius: 999px;
+  background: transparent; color: #b0a794;
+  border: 1px solid #cfc6b3;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.hover-underline { position: relative; }
+.hover-underline::after {
+  content: '';
+  position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 1px; background: currentColor;
+  transition: width 240ms ease;
+}
+.hover-underline:hover::after { width: 100%; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px;
+  background: rgba(26,26,26,0.06);
+  color: var(--ink);
+  font-size: 12px;
+  border: 1px solid rgba(26,26,26,0.08);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.accordion-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: 16.5px;
+  font-weight: 500;
+  padding: 20px 0;
+  color: var(--ink);
+}
+.accordion-trigger:hover { opacity: 0.8; }
+.accordion-trigger svg {
+  transition: transform 200ms;
+}
+.accordion-trigger[data-open="true"] svg {
+  transform: rotate(180deg);
+}
+.accordion-content {
+  overflow: hidden;
+  font-size: 15px;
+  color: #3a3a3a;
+  line-height: 1.7;
+  padding-bottom: 20px;
+}
