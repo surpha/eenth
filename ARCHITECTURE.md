@@ -60,7 +60,7 @@ Animated opening sequence with brand identity.
 
 **Animation phases:**
 1. **0–500ms:** Open lock icon scales in with OvershootInterpolator + "BLOCK" fades in (white)
-2. **900ms:** Lock image swaps to closed + bounce animation + text fades to "BLOCKIN" (red #FF453A)
+2. **900ms:** Lock image swaps to closed + bounce animation + smooth crossfade to "B" (white) + "LOCKIN" (red #FF453A)
 3. **2000ms:** Navigate to MainActivity with fade transition
 
 ### 2. MainActivity (`MainActivity.kt`)
@@ -71,8 +71,9 @@ The main entry point and configuration screen.
 - Brand text transitions: "BLOCK" (white) ↔ "BLOCKIN" (red) based on state
 - NFC tag pairing and name management
 - "Block Everything" toggle (hides modes/apps sections when ON)
-- App group management (presets + custom, with app icon grid detail)
+- App group management (presets + custom, 2-column grid with app icon tiles)
 - Individual app blocking (app picker bottom sheet)
+- **All settings locked while blocked** (modes, apps, toggles disabled)
 - Focus timer display (H:MM:SS format, sans-serif-thin)
 - NFC reader mode for block/unblock toggle
 - Bottom navigation to StatsActivity

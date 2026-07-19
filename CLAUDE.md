@@ -59,16 +59,17 @@ website/                      # React + Vite landing page
 ## Key Concepts
 
 ### App Launch Flow
-1. `SplashActivity` — Animated 2s splash (open lock + "BLOCK" → closed lock + "BLOCKIN" in red)
+1. `SplashActivity` — Animated 2s splash (open lock + "BLOCK" crossfades to closed lock + "B" white + "LOCKIN" red)
 2. `MainActivity` — Main configuration and status screen
 3. Bottom nav switches between Home (MainActivity) and Insights (StatsActivity)
 
 ### Blocking Flow
 1. `BlockMonitorService` (ForegroundService) polls foreground app every 500ms via `UsageStatsManager` events
 2. Checks if app is in: `blocked_apps` OR any selected group's packages OR `brick_everything` is on
-3. If blocked + bricked → shows full-screen `TYPE_APPLICATION_OVERLAY` ("B LOCKED IN" screen)
-4. User taps overlay → opens `BlockerActivity` → taps NFC tag to unblock
-5. Overlay is dismissed when `is_bricked` becomes false
+3. If blocked + bricked → shows full-screen `TYPE_APPLICATION_OVERLAY` ("B LOCKED IN" screen) + auto-launches BlockerActivity
+4. BlockerActivity's NFC reader mode takes priority (no system chooser dialog)
+5. User taps NFC tag → unblocks → overlay dismissed
+6. All settings (modes, apps, toggles) are locked while blocked — cannot be changed until unblocked
 
 ### SharedPreferences Keys (`eenth_prefs`)
 | Key | Type | Purpose |
@@ -111,7 +112,7 @@ These are never blocked even in "brick everything" mode:
   2. **Screen Time** (stacked BarChart, 7 days) — per-app colored breakdown with legend
   3. **Pickups** (BarChart, 7 days) — orange bar for today
   4. **Top Apps** (HorizontalBarChart) — top 6 apps by screen time today
-- Uses `UsageStatsManager` for screen time + pickup count
+- Screen time uses event-based calculation (`queryEvents` with `MOVE_TO_FOREGROUND`/`MOVE_TO_BACKGROUND`) for accuracy
 - Focus data from SharedPreferences (archived daily on unblock)
 - Streak calculation based on consecutive days with focus sessions
 
@@ -123,8 +124,11 @@ These are never blocked even in "brick everything" mode:
 - `dpToPx()` helper in `MainActivity` for density-independent measurements.
 - Colors defined in `res/values/colors.xml`. Dark theme only (`bg_primary=#000000`).
 - Custom drawables in `res/drawable/bg_*.xml` for cards, hero sections, dots.
-- Brand text: "BLOCK" (unblocked, white) / "BLOCKIN" (blocked, red #FF453A)
+- **Font:** Inter (all weights from Thin to Bold) — set as app-wide default in theme.
+- Brand text: "BLOCK" (unblocked, white) / "BLOCKIN" (blocked, red #FF453A) — "B" stays white, "LOCKIN" is red.
+- Modes displayed in 2-column grid (GridLayoutManager). Selected = green border (unblocked) / red border (blocked).
 - Bottom nav on both main screens with vector icons (home, bar chart)
+- **Settings locked while blocked:** Modes, app list, toggles all disabled when `is_bricked` is true.
 
 ## Color Scheme
 | Token | Hex | Usage |
