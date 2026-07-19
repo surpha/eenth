@@ -140,13 +140,8 @@ class BlockMonitorService : Service() {
 
         val foregroundPkg = getForegroundPackage() ?: return
 
-        // Don't block our own app or system packages
-        if (foregroundPkg == packageName) {
-            if (isOverlayShowing) hideOverlay()
-            return
-        }
-        if (foregroundPkg == "com.eenth.blocker") {
-            if (isOverlayShowing) hideOverlay()
+        // Our own app is in foreground (BlockerActivity or MainActivity) — keep overlay if bricked
+        if (foregroundPkg == packageName || foregroundPkg == "com.eenth.blocker") {
             return
         }
         if (systemUiPackages.contains(foregroundPkg)) {
@@ -203,13 +198,6 @@ class BlockMonitorService : Service() {
         val inflater = LayoutInflater.from(this)
         overlayView = inflater.inflate(R.layout.window_blocker, null)
 
-        // Make overlay tappable to open BlockerActivity for NFC unblock
-        overlayView?.setOnClickListener {
-            val intent = Intent(this, BlockerActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-        }
-
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -226,6 +214,12 @@ class BlockMonitorService : Service() {
             windowManager.addView(overlayView, params)
             isOverlayShowing = true
             Log.d(TAG, "Overlay shown for: $lastBlockedPackage")
+
+            // Launch BlockerActivity immediately so its NFC reader mode is active
+            // This prevents the system NFC chooser from appearing
+            val intent = Intent(this, BlockerActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to show overlay: ${e.message}")
         }
