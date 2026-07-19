@@ -24,12 +24,11 @@
         android:text="Insights"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/inter_semibold"
         android:gravity="center"
-        android:paddingTop="56dp"
-        android:paddingBottom="28dp"
-        android:letterSpacing="0.08" />
+        android:paddingTop="60dp"
+        android:paddingBottom="32dp"
+        android:letterSpacing="0.06" />
 
     <!-- Today's Overview - 2x2 grid -->
     <LinearLayout
@@ -59,8 +58,8 @@
                     android:layout_height="wrap_content"
                     android:text="—"
                     android:textColor="@color/text_primary"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-thin" />
+                    android:textSize="24sp"
+                    android:fontFamily="@font/inter_light" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -68,7 +67,8 @@
                     android:text="screen time"
                     android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
-                    android:layout_marginTop="4dp" />
+                    android:fontFamily="@font/inter_regular"
+                    android:layout_marginTop="6dp" />
 
             </LinearLayout>
 
@@ -87,8 +87,8 @@
                     android:layout_height="wrap_content"
                     android:text="0m"
                     android:textColor="@color/accent_green"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-thin" />
+                    android:textSize="24sp"
+                    android:fontFamily="@font/inter_light" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -96,7 +96,8 @@
                     android:text="focused"
                     android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
-                    android:layout_marginTop="4dp" />
+                    android:fontFamily="@font/inter_regular"
+                    android:layout_marginTop="6dp" />
 
             </LinearLayout>
 
@@ -124,8 +125,8 @@
                     android:layout_height="wrap_content"
                     android:text="—"
                     android:textColor="@color/text_primary"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-thin" />
+                    android:textSize="24sp"
+                    android:fontFamily="@font/inter_light" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -133,7 +134,8 @@
                     android:text="pickups"
                     android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
-                    android:layout_marginTop="4dp" />
+                    android:fontFamily="@font/inter_regular"
+                    android:layout_marginTop="6dp" />
 
             </LinearLayout>
 
@@ -152,8 +154,8 @@
                     android:layout_height="wrap_content"
                     android:text="0"
                     android:textColor="@color/text_primary"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-thin" />
+                    android:textSize="24sp"
+                    android:fontFamily="@font/inter_light" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -161,7 +163,8 @@
                     android:text="sessions"
                     android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
-                    android:layout_marginTop="4dp" />
+                    android:fontFamily="@font/inter_regular"
+                    android:layout_marginTop="6dp" />
 
             </LinearLayout>
 
@@ -179,7 +182,7 @@
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_card"
         android:paddingHorizontal="20dp"
-        android:paddingVertical="16dp">
+        android:paddingVertical="18dp">
 
         <TextView
             android:id="@+id/tvStreak"
@@ -188,14 +191,15 @@
             android:text="0"
             android:textColor="@color/accent_orange"
             android:textSize="22sp"
-            android:fontFamily="sans-serif-thin" />
+            android:fontFamily="@font/inter_light" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" day streak"
             android:textColor="@color/text_tertiary"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:fontFamily="@font/inter_regular" />
 
     </LinearLayout>
 
@@ -205,12 +209,12 @@
         android:layout_height="wrap_content"
         android:text="Focus Time"
         android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="15sp"
+        android:fontFamily="@font/inter_semibold"
         android:letterSpacing="-0.01"
         android:paddingStart="24dp"
-        android:paddingTop="28dp"
-        android:paddingBottom="8dp" />
+        android:paddingTop="32dp"
+        android:paddingBottom="12dp" />
 
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/chartFocus"
@@ -218,7 +222,7 @@
         android:layout_height="200dp"
         android:layout_marginHorizontal="20dp"
         android:background="@drawable/bg_card"
-        android:padding="12dp" />
+        android:padding="16dp" />
 
     <!-- Screen Time Chart -->
     <TextView
@@ -226,12 +230,12 @@
         android:layout_height="wrap_content"
         android:text="Screen Time"
         android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="15sp"
+        android:fontFamily="@font/inter_semibold"
         android:letterSpacing="-0.01"
         android:paddingStart="24dp"
-        android:paddingTop="28dp"
-        android:paddingBottom="8dp" />
+        android:paddingTop="32dp"
+        android:paddingBottom="12dp" />
 
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/chartScreenTime"
@@ -239,7 +243,7 @@
         android:layout_height="260dp"
         android:layout_marginHorizontal="20dp"
         android:background="@drawable/bg_card"
-        android:padding="12dp" />
+        android:padding="16dp" />
 
     <!-- Pickups Chart -->
     <TextView
@@ -247,12 +251,12 @@
         android:layout_height="wrap_content"
         android:text="Pickups"
         android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="15sp"
+        android:fontFamily="@font/inter_semibold"
         android:letterSpacing="-0.01"
         android:paddingStart="24dp"
-        android:paddingTop="28dp"
-        android:paddingBottom="8dp" />
+        android:paddingTop="32dp"
+        android:paddingBottom="12dp" />
 
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/chartPickups"
@@ -260,7 +264,7 @@
         android:layout_height="180dp"
         android:layout_marginHorizontal="20dp"
         android:background="@drawable/bg_card"
-        android:padding="12dp" />
+        android:padding="16dp" />
 
     <!-- Most Used Apps -->
     <TextView
@@ -268,11 +272,11 @@
         android:layout_height="wrap_content"
         android:text="Most Used Today"
         android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="15sp"
+        android:fontFamily="@font/inter_semibold"
         android:letterSpacing="-0.01"
         android:paddingStart="24dp"
-        android:paddingTop="28dp"
+        android:paddingTop="32dp"
         android:paddingBottom="12dp" />
 
     <com.github.mikephil.charting.charts.HorizontalBarChart
@@ -281,7 +285,7 @@
         android:layout_height="220dp"
         android:layout_marginHorizontal="20dp"
         android:background="@drawable/bg_card"
-        android:padding="12dp" />
+        android:padding="16dp" />
 
     <!-- Usage permission hint -->
     <TextView
@@ -304,15 +308,15 @@
 <View
     android:layout_width="match_parent"
     android:layout_height="0.5dp"
-    android:background="@color/divider" />
+    android:background="#1A1A1A" />
 
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center"
-    android:paddingTop="10dp"
-    android:paddingBottom="28dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="32dp"
     android:background="#000000">
 
     <LinearLayout
@@ -322,13 +326,13 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingVertical="6dp"
+        android:paddingVertical="4dp"
         android:clickable="true"
         android:focusable="true">
 
         <ImageView
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@drawable/ic_nav_home"
             android:tint="@color/text_tertiary"
             android:importantForAccessibility="no" />
@@ -339,7 +343,7 @@
             android:text="Home"
             android:textColor="@color/text_tertiary"
             android:textSize="10sp"
-            android:fontFamily="sans-serif"
+            android:fontFamily="@font/inter_regular"
             android:layout_marginTop="4dp" />
 
     </LinearLayout>
@@ -351,13 +355,13 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingVertical="6dp"
+        android:paddingVertical="4dp"
         android:clickable="true"
         android:focusable="true">
 
         <ImageView
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@drawable/ic_nav_insights"
             android:tint="@color/text_primary"
             android:importantForAccessibility="no" />
@@ -368,7 +372,7 @@
             android:text="Insights"
             android:textColor="@color/text_primary"
             android:textSize="10sp"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/inter_medium"
             android:layout_marginTop="4dp" />
 
     </LinearLayout>
