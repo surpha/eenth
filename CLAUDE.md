@@ -1,7 +1,9 @@
-# CLAUDE.md — Agent Instructions for Eenth
+# CLAUDE.md — Agent Instructions for Block (formerly Eenth)
 
-## What is Eenth?
-Eenth is an open-source, physical-first Android app blocker. Users pair an NFC tag ("brick") to their phone. Tapping the tag bricks/unbricks their device — blocking all selected apps with a full-screen overlay. No willpower needed; you must physically find your brick to get your apps back.
+## What is Block?
+Block is an open-source, physical-first Android app blocker. Users pair an NFC tag ("block") to their phone. Tapping the tag blocks/unblocks their device — blocking all selected apps with a full-screen overlay. No willpower needed; you must physically find your block to get your apps back.
+
+**Brand identity:** The app is called "Block". When blocked, the brand text transitions to "BLOCKIN" (reads as "be lockin' in"). The tagline is "BLOCK IN".
 
 ## Tech Stack
 - **Language:** Kotlin (JVM target 11)
@@ -11,8 +13,10 @@ Eenth is an open-source, physical-first Android app blocker. Users pair an NFC t
 - **NFC:** `NfcAdapter.ReaderCallback` for tag read
 - **Server:** Supabase REST API (tag registration/verification)
 - **HTTP client:** OkHttp 4.12.0
+- **Charts:** MPAndroidChart v3.1.0 (via JitPack)
 - **Build:** Gradle with version catalog (`gradle/libs.versions.toml`)
 - **Min SDK:** 26, Target/Compile SDK: 36
+- **Website:** React + Vite landing page (in `website/` folder)
 
 ## Build & Deploy
 ```bash
@@ -24,41 +28,62 @@ $HOME/Library/Android/sdk/platform-tools/adb install -r app/build/outputs/apk/de
 
 # If multiple devices, specify serial:
 $HOME/Library/Android/sdk/platform-tools/adb -s <SERIAL> install -r app/build/outputs/apk/debug/app-debug.apk
+
+# Launch app
+$HOME/Library/Android/sdk/platform-tools/adb shell am start -n com.eenth.blocker/.SplashActivity
 ```
 
 ## Project Structure
 ```
 app/src/main/java/com/eenth/blocker/
-├── MainActivity.kt          # Main UI — status card, tag section, groups, app list
+├── SplashActivity.kt        # Animated splash: open lock → BLOCK → closed lock → BLOCKIN
+├── MainActivity.kt          # Main UI — status card, tag section, groups, app list, bottom nav
+├── StatsActivity.kt         # Insights screen — MPAndroidChart (focus, screen time, pickups, top apps)
 ├── EenthService.kt          # AccessibilityService — detects foreground app, launches BlockerActivity
-├── BlockerActivity.kt       # Full-screen blocker overlay + NFC reader for direct unbrick
+├── BlockerActivity.kt       # Full-screen blocker overlay + NFC reader for direct unblock
 ├── NfcUnlockActivity.kt     # Handles system NFC intent dispatch (TAG_DISCOVERED)
+├── EenthTile.kt             # Quick Settings tile for brick/unbrick toggle
 ├── TagRepository.kt         # Supabase REST client for tag pair/verify/unpair/updateName
 ├── AppGroup.kt              # AppGroup data class + GroupManager (presets + custom groups)
 ├── GroupAdapter.kt           # RecyclerView adapter for group cards (overlapping app icons)
 ├── AppListAdapter.kt         # RecyclerView adapter for the app list (icon + name + switch)
 └── ui/theme/                 # Color, Theme, Type (unused Compose leftovers)
+
+website/                      # React + Vite landing page
+├── src/components/           # Hero, BuySection, FAQ, HowItWorks, Modes, etc.
+├── src/pages/                # Page routes
+└── public/                   # Static assets
 ```
 
 ## Key Concepts
+
+### App Launch Flow
+1. `SplashActivity` — Animated 2s splash (open lock + "BLOCK" → closed lock + "BLOCKIN" in red)
+2. `MainActivity` — Main configuration and status screen
+3. Bottom nav switches between Home (MainActivity) and Insights (StatsActivity)
 
 ### Blocking Flow
 1. `EenthService` (AccessibilityService) observes every window change
 2. Checks if app is in: `blocked_apps` OR any selected group's packages OR `brick_everything` is on
 3. If blocked + bricked → launches `BlockerActivity` (full-screen wall)
-4. User must tap their NFC brick on `BlockerActivity` to unbrick
+4. User must tap their NFC block on `BlockerActivity` to unblock
 
 ### SharedPreferences Keys (`eenth_prefs`)
 | Key | Type | Purpose |
 |-----|------|---------|
 | `blocked_apps` | StringSet | Individually blocked package names |
-| `is_bricked` | Boolean | Whether device is currently bricked |
-| `brick_everything` | Boolean | Block ALL apps (except system) |
+| `is_bricked` | Boolean | Whether device is currently blocked |
+| `brick_everything` | Boolean | Block ALL apps (except system + payments) |
 | `paired_tag_id` | String | NFC tag UID paired to this device |
 | `tag_name` | String | Display name for the paired tag |
 | `app_groups` | String (JSON) | Custom group definitions |
 | `selected_groups` | StringSet | Which groups are active |
 | `group_pkgs_{id}` | StringSet | Customized packages per group |
+| `brick_start_time` | Long | Timestamp when current session started |
+| `today_focus_ms` | Long | Accumulated focus time today (ms) |
+| `today_sessions` | Int | Number of block sessions today |
+| `stat_date` | String | Date for daily stats reset (yyyy-MM-dd) |
+| `focus_YYYY-MM-DD` | Long | Archived daily focus time for weekly chart |
 
 ### System Package Allowlist
 These packages are NEVER blocked (in `EenthService.kt`):
@@ -66,13 +91,27 @@ These packages are NEVER blocked (in `EenthService.kt`):
 - Nexus launcher, Android settings
 - Android system (chooser), Samsung resolver
 - Samsung Tags service, Android NFC service
-- Eenth itself
+- Block itself (`com.eenth.blocker`)
+
+### Payment App Allowlist
+These are never blocked even in "brick everything" mode:
+- Google Pay, Paytm, PhonePe, UPI, Amazon, MobiKwik, Samsung Pay, Play Store
 
 ### NFC Flow
 - **Pair:** `MainActivity` reads tag UID via `ReaderCallback`, saves to prefs, registers with Supabase
-- **Brick/Unbrick:** Tap paired tag on `MainActivity` toggles `is_bricked`
-- **Unbrick from blocker:** `BlockerActivity` has its own `ReaderCallback` for direct unbrick
+- **Block/Unblock:** Tap paired tag on `MainActivity` toggles `is_bricked`
+- **Unblock from blocker:** `BlockerActivity` has its own `ReaderCallback` for direct unblock
 - **System dispatch:** `NfcUnlockActivity` handles `TAG_DISCOVERED`/`TECH_DISCOVERED` intents
+
+### Insights / Stats
+- `StatsActivity` uses **MPAndroidChart** for 4 chart types:
+  1. **Focus Time** (BarChart, 7 days) — green bar for today
+  2. **Screen Time** (stacked BarChart, 7 days) — per-app colored breakdown with legend
+  3. **Pickups** (BarChart, 7 days) — orange bar for today
+  4. **Top Apps** (HorizontalBarChart) — top 6 apps by screen time today
+- Uses `UsageStatsManager` for screen time + pickup count
+- Focus data from SharedPreferences (archived daily on unblock)
+- Streak calculation based on consecutive days with focus sessions
 
 ## Coding Conventions
 - **No Jetpack Compose.** All UI is XML layouts inflated programmatically.
@@ -80,14 +119,31 @@ These packages are NEVER blocked (in `EenthService.kt`):
 - Bottom sheets use `BottomSheetDialog` from Material library.
 - Programmatic view creation is used for dynamic content (group detail grid, overlapping icons).
 - `dpToPx()` helper in `MainActivity` for density-independent measurements.
-- Colors defined in `res/values/colors.xml`. Dark theme only (`bg_primary=#050505`).
+- Colors defined in `res/values/colors.xml`. Dark theme only (`bg_primary=#000000`).
 - Custom drawables in `res/drawable/bg_*.xml` for cards, hero sections, dots.
+- Brand text: "BLOCK" (unblocked, white) / "BLOCKIN" (blocked, red #FF453A)
+- Bottom nav on both main screens with vector icons (home, bar chart)
+
+## Color Scheme
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `bg_primary` | #000000 | App background |
+| `bg_card` | #0A0A0A | Card backgrounds |
+| `bg_card_elevated` | #111111 | Elevated cards |
+| `text_primary` | #FFFFFF | Main text |
+| `text_secondary` | #8E8E93 | Secondary text |
+| `text_tertiary` | #48484A | Muted text, inactive nav |
+| `accent_red` | #FF453A | Blocked state, active brand |
+| `accent_green` | #32D74B | Unblocked state, focus charts |
+| `accent_orange` | #FF9F0A | Warnings, pickups chart |
+| `divider` | #1C1C1E | Borders, grid lines |
 
 ## Testing on Device
-- After install, user must manually enable Accessibility Service: Settings → Accessibility → Eenth
+- After install, user must manually enable Accessibility Service: Settings → Accessibility → Block
 - After `adb install`, accessibility service persists (no need to re-enable unless app data cleared)
-- To unbrick a stuck device: `adb shell am force-stop com.eenth.blocker` or `adb shell pm clear com.eenth.blocker`
+- To unblock a stuck device: `adb shell am force-stop com.eenth.blocker` or `adb shell pm clear com.eenth.blocker`
 - NFC tag UID for dev tag: `044E5B1A1F1D91`
+- Usage stats permission must be granted manually: Settings → Apps → Special access → Usage access
 
 ## Git Workflow
 - `main` branch is the stable branch
@@ -97,7 +153,11 @@ These packages are NEVER blocked (in `EenthService.kt`):
 
 ## Common Pitfalls
 - **ScrollView + RecyclerView:** Use `NestedScrollView`, never plain `ScrollView`
-- **NFC system chooser blocked:** Android's system chooser/resolver packages must be in the allowlist or NFC dispatch breaks while bricked
+- **NFC system chooser blocked:** Android's system chooser/resolver packages must be in the allowlist or NFC dispatch breaks while blocked
 - **SharedPreferences corruption:** Never use `sed` to edit prefs XML on device — use `pm clear` to reset
 - **AccessibilityService context:** `EenthService` runs in its own process context; broadcast receivers need proper registration
 - **Offline tag verification:** Currently not enforced (known limitation). Tag UID is verified locally against `paired_tag_id` pref.
+- **MPAndroidChart Legend:** Use `isWordWrapEnabled` (not `wordWrapEnabled`) for legend text wrapping
+- **Stacked BarChart:** Use `BarEntry(x, floatArrayOf(...))` with `stackLabels` on the dataset
+- **Usage permission:** `UsageStatsManager` queries return empty without PACKAGE_USAGE_STATS + user grant
+- **Package name:** Internal package is still `com.eenth.blocker` (not renamed to avoid breaking installs)
