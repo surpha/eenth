@@ -83,7 +83,7 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
 
         if (pairedId == null) {
             runOnUiThread {
-                Toast.makeText(this, "No tag paired yet. Open Eenth to pair.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "No tag paired yet. Open Block to pair.", Toast.LENGTH_SHORT).show()
             }
             finish()
             return
@@ -129,11 +129,10 @@ class NfcUnlockActivity : Activity(), NfcAdapter.ReaderCallback {
             val closeIntent = Intent(BlockerActivity.ACTION_CLOSE_BLOCKER)
             sendBroadcast(closeIntent)
 
-            if (!newState) {
-                val mainIntent = Intent(this, MainActivity::class.java)
-                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(mainIntent)
-            }
+            // Always open MainActivity for visual confirmation
+            val mainIntent = Intent(this, MainActivity::class.java)
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(mainIntent)
 
             Log.d("BlockNfc", "Toggled to: blocked=$newState")
             finish()

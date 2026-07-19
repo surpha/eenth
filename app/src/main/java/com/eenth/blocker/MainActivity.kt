@@ -198,6 +198,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         updateStatusBanner()
         updateStats()
         startTimerIfBricked()
+        promptEnableNfcIfNeeded()
 
         // Enable NFC reader mode — intercepts ALL tag taps while app is visible
         val flags = NfcAdapter.FLAG_READER_NFC_A or
@@ -320,19 +321,32 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
     private fun eraseTagData(tag: Tag?) {
         if (tag == null) return
         try {
+            val mimeRecord = NdefRecord.createMime(
+                "application/com.eenth.blocker",
+                "block".toByteArray()
+            )
+            val aar = NdefRecord.createApplicationRecord(packageName)
+            val message = NdefMessage(arrayOf(mimeRecord, aar))
+
             val ndef = Ndef.get(tag)
             if (ndef != null) {
                 ndef.connect()
                 if (ndef.isWritable) {
-                    val emptyRecord = NdefRecord(NdefRecord.TNF_EMPTY, null, null, null)
-                    val emptyMessage = NdefMessage(arrayOf(emptyRecord))
-                    ndef.writeNdefMessage(emptyMessage)
-                    Log.d("EenthNfc", "Tag erased successfully")
+                    ndef.writeNdefMessage(message)
+                    Log.d("BlockNfc", "MIME + AAR written to tag successfully")
                 }
                 ndef.close()
+            } else {
+                val formatable = NdefFormatable.get(tag)
+                if (formatable != null) {
+                    formatable.connect()
+                    formatable.format(message)
+                    Log.d("BlockNfc", "Tag formatted with MIME + AAR")
+                    formatable.close()
+                }
             }
         } catch (e: Exception) {
-            Log.d("EenthNfc", "Tag erase skipped: ${e.message}")
+            Log.d("BlockNfc", "Tag write skipped: ${e.message}")
         }
     }
 
@@ -1095,5 +1109,20 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
             )
             startActivity(intent)
         }
+    }
+
+    private fun promptEnableNfcIfNeeded() {
+        Log.d("BlockNfc", "promptEnableNfcIfNeeded: nfcAdapter=$nfcAdapter, isEnabled=${nfcAdapter?.isEnabled}")
+        val adapter = nfcAdapter ?: return
+        if (adapter.isEnabled) return
+
+        AlertDialog.Builder(this)
+            .setTitle("NFC is disabled")
+            .setMessage("Block requires NFC to block distractions. Enable it now?")
+            .setPositiveButton("Enable") { _, _ ->
+                startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+            }
+            .setNegativeButton("Not now", null)
+            .show()
     }
 }
