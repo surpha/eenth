@@ -135,6 +135,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         switchBlockAll.isChecked = prefs.getBoolean(KEY_BRICK_EVERYTHING, false)
         updateBlockAllVisibility(switchBlockAll.isChecked)
         switchBlockAll.setOnCheckedChangeListener { _, isChecked ->
+            if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                // Revert the toggle — can't change while blocked
+                switchBlockAll.isChecked = !isChecked
+                Toast.makeText(this, "Unblock to change settings", Toast.LENGTH_SHORT).show()
+                return@setOnCheckedChangeListener
+            }
             prefs.edit().putBoolean(KEY_BRICK_EVERYTHING, isChecked).apply()
             updateBlockAllVisibility(isChecked)
         }
@@ -617,10 +623,16 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         val groups = GroupManager.loadGroups(prefs, installedPackages).toMutableList()
         groupAdapter = GroupAdapter(groups,
             onClick = { group ->
-                showGroupDetail(group)
+                if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                    Toast.makeText(this, "Unblock to change modes", Toast.LENGTH_SHORT).show()
+                } else {
+                    showGroupDetail(group)
+                }
             },
             onLongPress = { group ->
-                if (!group.isPreset) {
+                if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                    Toast.makeText(this, "Unblock to change modes", Toast.LENGTH_SHORT).show()
+                } else if (!group.isPreset) {
                     AlertDialog.Builder(this, androidx.appcompat.R.style.Theme_AppCompat_Dialog)
                         .setTitle("Delete \"${group.name}\"?")
                         .setMessage("This group will be removed.")
@@ -636,7 +648,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         rvGroups.adapter = groupAdapter
 
         findViewById<TextView>(R.id.btnAddGroup).setOnClickListener {
-            showCreateGroupDialog()
+            if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                Toast.makeText(this, "Unblock to add modes", Toast.LENGTH_SHORT).show()
+            } else {
+                showCreateGroupDialog()
+            }
         }
     }
 
@@ -852,7 +868,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
         rebuildBlockedAppsGrid()
 
         findViewById<TextView>(R.id.btnAddApps).setOnClickListener {
-            showAppPickerSheet()
+            if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                Toast.makeText(this, "Unblock to add apps", Toast.LENGTH_SHORT).show()
+            } else {
+                showAppPickerSheet()
+            }
         }
     }
 
@@ -915,6 +935,10 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                 cell.addView(icon)
                 cell.addView(label)
                 cell.setOnClickListener {
+                    if (prefs.getBoolean(KEY_IS_BRICKED, false)) {
+                        Toast.makeText(this, "Unblock to remove apps", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
                     val current = prefs.getStringSet(KEY_BLOCKED_APPS, emptySet())?.toMutableSet() ?: mutableSetOf()
                     current.remove(pkg)
                     prefs.edit().putStringSet(KEY_BLOCKED_APPS, current).apply()
