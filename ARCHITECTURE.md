@@ -14,8 +14,13 @@ flowchart TD
     BA -->|"writes SharedPrefs"| SP
     NUA -->|"writes SharedPrefs"| SP
 
-    SP -->|"reads"| ES["EenthService\n(AccessibilityService)"]
-    ES -->|"launches"| BA
+    MA -->|"starts"| BMS["BlockMonitorService\n(ForegroundService)"]
+    BMS -->|"reads"| SP
+    BMS -->|"polls"| USM2["UsageStatsManager\n(foreground app)"]
+    BMS -->|"shows/hides"| OV["Overlay Window\n(TYPE_APPLICATION_OVERLAY)"]
+    OV -->|"tap"| BA
+
+    SP -->|"broadcast"| BMS
 
     MA -->|"REST API"| SB[(Supabase\ntag_registrations)]
     BA -->|"REST API"| SB
@@ -25,8 +30,8 @@ flowchart TD
     SA -->|"reads"| USM["UsageStatsManager"]
 
     subgraph Blocking Decision
-        ES -->|"check"| BrickAll{"brick_everything?"}
-        BrickAll -->|yes| BLOCK["Launch BlockerActivity"]
+        BMS -->|"check"| BrickAll{"brick_everything?"}
+        BrickAll -->|yes| BLOCK["Show Overlay"]
         BrickAll -->|no| CheckApps{"pkg in blocked_apps\nOR group packages?"}
         CheckApps -->|yes| BLOCK
         CheckApps -->|no| ALLOW["Allow"]
@@ -112,23 +117,35 @@ Dedicated Insights screen with usage analytics.
 **Stats grid:** Screen time, Focus time, Pickups, Sessions (2x2)
 **Streak:** Consecutive days with focus sessions
 
-### 4. EenthService (`EenthService.kt`)
-An Android AccessibilityService — the core blocking engine.
+### 4. BlockMonitorService (`BlockMonitorService.kt`)
+A ForegroundService that replaces the previous AccessibilityService approach. Polls the foreground app every 500ms using `UsageStatsManager` events and shows a full-screen overlay when a blocked app is detected.
+
+**How it works:**
+1. Runs as a ForegroundService with a persistent notification ("Block is active")
+2. Every 500ms, queries `UsageEvents` for the last 5 seconds to find the current foreground app
+3. If the foreground app should be blocked → shows a `TYPE_APPLICATION_OVERLAY` full-screen window
+4. If the user navigates away or unblocks → hides the overlay
+
+**Permissions required:**
+- `SYSTEM_ALERT_WINDOW` ("Display over other apps")
+- `PACKAGE_USAGE_STATS` ("Usage access")
+- `FOREGROUND_SERVICE`
+- `POST_NOTIFICATIONS` (Android 13+)
 
 **Blocking logic:**
 ```
 if is_bricked:
-    if brick_everything AND pkg not in (systemAllowlist + paymentAllowlist) → BLOCK
-    else if pkg in blocked_apps OR pkg in selected group packages → BLOCK
+    if brick_everything AND pkg not in (systemAllowlist + paymentAllowlist) → SHOW OVERLAY
+    else if pkg in blocked_apps OR pkg in selected group packages → SHOW OVERLAY
 else:
-    ALLOW all
+    HIDE OVERLAY
 ```
 
 **System allowlist** (never blocked): SystemUI, launchers, settings, NFC services, Block itself.
 **Payment allowlist** (never blocked in brick_everything): Google Pay, Paytm, PhonePe, UPI, Amazon, MobiKwik, Samsung Pay, Play Store.
 
 ### 5. BlockerActivity (`BlockerActivity.kt`)
-Full-screen overlay shown when a blocked app is detected.
+Activity for NFC unblock — launched when user taps the overlay.
 
 - Displays "BLOCKED" wall
 - NFC reader mode for direct unblock (user taps tag on this screen)

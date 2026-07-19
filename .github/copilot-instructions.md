@@ -28,7 +28,7 @@ Block (package: `com.eenth.blocker`) is an Android app blocker (Kotlin, XML layo
 
 ## Patterns to Follow
 - Broadcast `ACTION_STATE_CHANGED` after any SharedPreferences change that affects blocking state.
-- Add new system packages to the allowlist in `EenthService.kt` if they must never be blocked.
+- Add new system packages to the allowlist in `BlockMonitorService.kt` if they must never be blocked.
 - Group packages stored as `StringSet` under key `group_pkgs_{groupId}` in SharedPreferences.
 - Bottom sheets use `BottomSheetDialog` from `com.google.android.material`.
 - Focus time archived as `focus_YYYY-MM-DD` (Long, ms) for weekly chart history.

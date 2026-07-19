@@ -175,6 +175,10 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
                 }
             }
         }
+
+        // Start the overlay monitor service (replaces AccessibilityService)
+        ensureOverlayPermission()
+        BlockMonitorService.start(this)
     }
 
     override fun onResume() {
@@ -1050,5 +1054,16 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
         sheet.setContentView(root)
         sheet.show()
+    }
+
+    private fun ensureOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Please grant 'Display over other apps' permission", Toast.LENGTH_LONG).show()
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                android.net.Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        }
     }
 }

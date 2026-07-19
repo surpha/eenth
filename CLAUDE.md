@@ -9,7 +9,7 @@ Block is an open-source, physical-first Android app blocker. Users pair an NFC t
 - **Language:** Kotlin (JVM target 11)
 - **UI:** Standard Android XML Layouts (NOT Compose) with AppCompat + Material Design
 - **Storage:** SharedPreferences (`eenth_prefs`)
-- **Blocking engine:** AccessibilityService (monitors `TYPE_WINDOW_STATE_CHANGED`)
+- **Blocking engine:** ForegroundService + UsageStatsManager polling + TYPE_APPLICATION_OVERLAY
 - **NFC:** `NfcAdapter.ReaderCallback` for tag read
 - **Server:** Supabase REST API (tag registration/verification)
 - **HTTP client:** OkHttp 4.12.0
@@ -39,14 +39,15 @@ app/src/main/java/com/eenth/blocker/
 ├── SplashActivity.kt        # Animated splash: open lock → BLOCK → closed lock → BLOCKIN
 ├── MainActivity.kt          # Main UI — status card, tag section, groups, app list, bottom nav
 ├── StatsActivity.kt         # Insights screen — MPAndroidChart (focus, screen time, pickups, top apps)
-├── EenthService.kt          # AccessibilityService — detects foreground app, launches BlockerActivity
-├── BlockerActivity.kt       # Full-screen blocker overlay + NFC reader for direct unblock
+├── BlockMonitorService.kt   # ForegroundService — polls foreground app, shows/hides overlay
+├── BlockerActivity.kt       # NFC unblock screen — launched from overlay tap
 ├── NfcUnlockActivity.kt     # Handles system NFC intent dispatch (TAG_DISCOVERED)
-├── EenthTile.kt             # Quick Settings tile for brick/unbrick toggle
+├── EenthTile.kt             # Quick Settings tile for block status
 ├── TagRepository.kt         # Supabase REST client for tag pair/verify/unpair/updateName
 ├── AppGroup.kt              # AppGroup data class + GroupManager (presets + custom groups)
 ├── GroupAdapter.kt           # RecyclerView adapter for group cards (overlapping app icons)
 ├── AppListAdapter.kt         # RecyclerView adapter for the app list (icon + name + switch)
+└── EenthService.kt          # (Legacy) AccessibilityService — kept for reference, disabled in manifest
 └── ui/theme/                 # Color, Theme, Type (unused Compose leftovers)
 
 website/                      # React + Vite landing page
@@ -63,10 +64,11 @@ website/                      # React + Vite landing page
 3. Bottom nav switches between Home (MainActivity) and Insights (StatsActivity)
 
 ### Blocking Flow
-1. `EenthService` (AccessibilityService) observes every window change
+1. `BlockMonitorService` (ForegroundService) polls foreground app every 500ms via `UsageStatsManager` events
 2. Checks if app is in: `blocked_apps` OR any selected group's packages OR `brick_everything` is on
-3. If blocked + bricked → launches `BlockerActivity` (full-screen wall)
-4. User must tap their NFC block on `BlockerActivity` to unblock
+3. If blocked + bricked → shows full-screen `TYPE_APPLICATION_OVERLAY` ("B LOCKED IN" screen)
+4. User taps overlay → opens `BlockerActivity` → taps NFC tag to unblock
+5. Overlay is dismissed when `is_bricked` becomes false
 
 ### SharedPreferences Keys (`eenth_prefs`)
 | Key | Type | Purpose |
@@ -86,7 +88,7 @@ website/                      # React + Vite landing page
 | `focus_YYYY-MM-DD` | Long | Archived daily focus time for weekly chart |
 
 ### System Package Allowlist
-These packages are NEVER blocked (in `EenthService.kt`):
+These packages are NEVER blocked (in `BlockMonitorService.kt`):
 - SystemUI, Samsung launcher, Samsung edge/cocktailbar
 - Nexus launcher, Android settings
 - Android system (chooser), Samsung resolver
@@ -139,11 +141,11 @@ These are never blocked even in "brick everything" mode:
 | `divider` | #1C1C1E | Borders, grid lines |
 
 ## Testing on Device
-- After install, user must manually enable Accessibility Service: Settings → Accessibility → Block
-- After `adb install`, accessibility service persists (no need to re-enable unless app data cleared)
+- After install, grant "Display over other apps" permission: Settings → Apps → Block → Display over other apps
+- Grant "Usage access" permission: Settings → Apps → Special access → Usage access
+- The BlockMonitorService starts automatically when the app launches
 - To unblock a stuck device: `adb shell am force-stop com.eenth.blocker` or `adb shell pm clear com.eenth.blocker`
 - NFC tag UID for dev tag: `044E5B1A1F1D91`
-- Usage stats permission must be granted manually: Settings → Apps → Special access → Usage access
 
 ## Git Workflow
 - `main` branch is the stable branch

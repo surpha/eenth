@@ -11,44 +11,48 @@
         android:orientation="vertical"
         android:gravity="center">
 
+        <!-- Lock icon -->
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:src="@drawable/ic_lock_splash"
+            android:contentDescription="Locked"
+            android:layout_marginBottom="32dp" />
+
+        <!-- BLOCKEDIN text: "B" white, "LOCKED IN" red -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/bg_dot_red" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="B"
+                android:textColor="#FFFFFF"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.05" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BLOCKED"
+                android:text="LOCKED IN"
                 android:textColor="#FF453A"
-                android:textSize="14sp"
+                android:textSize="36sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.12"
-                android:layout_marginStart="8dp" />
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.05" />
 
         </LinearLayout>
 
+        <!-- Hint -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="blocked"
-            android:textColor="#FFFFFF"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-light"
-            android:letterSpacing="-0.03"
-            android:layout_marginTop="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="tap block to unblock"
+            android:text="tap your block to unblock"
             android:textColor="#48484A"
             android:textSize="13sp"
             android:layout_marginTop="24dp" />

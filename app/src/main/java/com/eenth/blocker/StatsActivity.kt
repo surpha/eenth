@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
@@ -142,6 +143,51 @@ class StatsActivity : AppCompatActivity() {
         Color.parseColor("#BF5AF2"), // purple
     )
 
+    /**
+     * Calculate per-app foreground time for a given day using UsageEvents.
+     * This is more accurate than queryUsageStats(INTERVAL_DAILY) which has
+     * bucket alignment issues and can return inflated/incorrect values.
+     */
+    private fun getPerAppScreenTime(usm: UsageStatsManager, dayStart: Long, dayEnd: Long): Map<String, Long> {
+        val appTime = mutableMapOf<String, Long>()
+        val lastResumed = mutableMapOf<String, Long>()
+
+        val events = usm.queryEvents(dayStart, dayEnd)
+        val event = UsageEvents.Event()
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            val pkg = event.packageName ?: continue
+            if (pkg == packageName) continue
+
+            val isForeground = event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                    (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && event.eventType == UsageEvents.Event.ACTIVITY_RESUMED)
+            val isBackground = event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND ||
+                    (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && event.eventType == UsageEvents.Event.ACTIVITY_PAUSED)
+
+            if (isForeground) {
+                lastResumed[pkg] = event.timeStamp
+            } else if (isBackground) {
+                val start = lastResumed.remove(pkg) ?: continue
+                val duration = event.timeStamp - start
+                if (duration > 0) {
+                    appTime[pkg] = (appTime[pkg] ?: 0L) + duration
+                }
+            }
+        }
+
+        // Close any still-foreground apps at dayEnd (or now if today)
+        val closeTime = minOf(dayEnd, System.currentTimeMillis())
+        lastResumed.forEach { (pkg, start) ->
+            val duration = closeTime - start
+            if (duration > 0) {
+                appTime[pkg] = (appTime[pkg] ?: 0L) + duration
+            }
+        }
+
+        return appTime
+    }
+
     private fun loadScreenTimeChart() {
         val chart = findViewById<BarChart>(R.id.chartScreenTime)
         val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -149,7 +195,7 @@ class StatsActivity : AppCompatActivity() {
         val dayFmt = SimpleDateFormat("EEE", Locale.US)
         val dateFmt = SimpleDateFormat("d", Locale.US)
 
-        // Collect per-app usage for each of 7 days
+        // Collect per-app usage for each of 7 days using events-based calculation
         data class DayData(val label: String, val appMinutes: MutableMap<String, Float> = mutableMapOf())
         val days = mutableListOf<DayData>()
         val globalAppTotals = mutableMapOf<String, Float>()
@@ -168,12 +214,12 @@ class StatsActivity : AppCompatActivity() {
             val dayEnd = cal.timeInMillis
 
             val dayData = DayData(label)
-            val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, dayStart, dayEnd)
-            stats?.forEach { s ->
-                if (s.totalTimeInForeground > 60000 && s.packageName != packageName) {
-                    val mins = s.totalTimeInForeground / 60000f
-                    dayData.appMinutes[s.packageName] = mins
-                    globalAppTotals[s.packageName] = (globalAppTotals[s.packageName] ?: 0f) + mins
+            val appTimeMs = getPerAppScreenTime(usm, dayStart, dayEnd)
+            appTimeMs.forEach { (pkg, ms) ->
+                if (ms > 60000) {
+                    val mins = ms / 60000f
+                    dayData.appMinutes[pkg] = mins
+                    globalAppTotals[pkg] = (globalAppTotals[pkg] ?: 0f) + mins
                 }
             }
             days.add(dayData)
@@ -338,16 +384,9 @@ class StatsActivity : AppCompatActivity() {
         val startOfDay = cal.timeInMillis
         val now = System.currentTimeMillis()
 
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startOfDay, now)
-        val appUsage = mutableMapOf<String, Long>()
-        var totalScreenTime = 0L
-
-        stats?.forEach { stat ->
-            if (stat.totalTimeInForeground > 0 && stat.packageName != packageName) {
-                appUsage[stat.packageName] = stat.totalTimeInForeground
-                totalScreenTime += stat.totalTimeInForeground
-            }
-        }
+        // Use events-based calculation for accurate screen time
+        val appUsage = getPerAppScreenTime(usm, startOfDay, now)
+        val totalScreenTime = appUsage.values.sum()
 
         findViewById<TextView>(R.id.tvScreenTime).text = formatDuration(totalScreenTime)
 
