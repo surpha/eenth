@@ -9,22 +9,57 @@
     <!-- Lock icon (starts open, animates to closed) -->
     <ImageView
         android:id="@+id/ivLock"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:src="@drawable/ic_lock_open"
         android:importantForAccessibility="no" />
 
-    <!-- Brand text (starts as BLOCK, animates to BLOCKIN) -->
-    <TextView
-        android:id="@+id/tvSplashBrand"
+    <!-- Brand text container — holds both states for crossfade -->
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="BLOCK"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:fontFamily="sans-serif-medium"
-        android:letterSpacing="0.14"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="24dp">
+
+        <!-- State 1: "BLOCK" (white) -->
+        <TextView
+            android:id="@+id/tvSplashBlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BLOCK"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:fontFamily="@font/inter_semibold"
+            android:letterSpacing="0.14" />
+
+        <!-- State 2: "B" white + "LOCKIN" red (hidden initially) -->
+        <LinearLayout
+            android:id="@+id/splashBrandLockin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:alpha="0">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="B"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:fontFamily="@font/inter_semibold"
+                android:letterSpacing="0.14"
+                android:paddingEnd="2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOCKIN"
+                android:textColor="#FF453A"
+                android:textSize="26sp"
+                android:fontFamily="@font/inter_semibold"
+                android:letterSpacing="0.14" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

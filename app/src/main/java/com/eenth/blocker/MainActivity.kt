@@ -332,6 +332,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
     private fun updateStatusBanner() {
         val isBricked = prefs.getBoolean(KEY_IS_BRICKED, false)
+
+        // Update group card highlight color
+        if (::groupAdapter.isInitialized) {
+            groupAdapter.isBricked = isBricked
+        }
+
         if (isBricked) {
             tvBrand.text = "BLOCKIN"
             tvBrand.setTextColor(0xFFFF453A.toInt())
@@ -606,7 +612,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback {
 
     private fun setupGroups() {
         val rvGroups = findViewById<RecyclerView>(R.id.rvGroups)
-        rvGroups.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvGroups.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
 
         val groups = GroupManager.loadGroups(prefs, installedPackages).toMutableList()
         groupAdapter = GroupAdapter(groups,

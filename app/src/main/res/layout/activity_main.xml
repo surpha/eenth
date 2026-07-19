@@ -338,9 +338,9 @@
             android:id="@+id/rvGroups"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:clipToPadding="false" />
+            android:paddingHorizontal="20dp"
+            android:clipToPadding="false"
+            android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
 

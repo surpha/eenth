@@ -15,6 +15,14 @@ class GroupAdapter(
     private val onLongPress: (AppGroup) -> Unit
 ) : RecyclerView.Adapter<GroupAdapter.ViewHolder>() {
 
+    var isBricked: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val card: LinearLayout = view.findViewById(R.id.groupCard)
         val iconContainer: FrameLayout = view.findViewById(R.id.iconContainer)
@@ -34,13 +42,22 @@ class GroupAdapter(
         val pm = context.packageManager
         val density = context.resources.displayMetrics.density
 
+        // Grid spacing
+        val gap = (6 * density).toInt()
+        val lp = holder.itemView.layoutParams as? RecyclerView.LayoutParams
+            ?: RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        lp.bottomMargin = gap * 2
+        lp.marginStart = if (position % 2 == 0) 0 else gap
+        lp.marginEnd = if (position % 2 == 0) gap else 0
+        holder.itemView.layoutParams = lp
+
         holder.name.text = group.name
         holder.count.text = "${group.packages.size} apps"
 
         // Build overlapping app icons
         holder.iconContainer.removeAllViews()
-        val iconSize = (26 * density).toInt()
-        val step = (18 * density).toInt()
+        val iconSize = (30 * density).toInt()
+        val step = (20 * density).toInt()
         val maxIcons = 4
 
         group.packages.toList().take(maxIcons).forEachIndexed { index, pkg ->
@@ -72,9 +89,13 @@ class GroupAdapter(
             holder.iconContainer.addView(badge)
         }
 
-        // Selection state
+        // Selection state — green when unblocked, red when blocked
         if (group.isSelected) {
-            holder.card.setBackgroundResource(R.drawable.bg_card_selected)
+            if (isBricked) {
+                holder.card.setBackgroundResource(R.drawable.bg_card_selected_red)
+            } else {
+                holder.card.setBackgroundResource(R.drawable.bg_card_selected)
+            }
         } else {
             holder.card.setBackgroundResource(R.drawable.bg_card)
         }
